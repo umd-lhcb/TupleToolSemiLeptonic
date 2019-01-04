@@ -5,9 +5,12 @@ channel.
 
 Obtained from Gregory Ciezarek. All rights reserved.
 
-## Notes
+## Coding style
 All `.cpp` and `.h` source files have been reformatted by:
 ```
-clang-format -i -style=Google *.cpp *.h
+clang-format -i -style=file *.cpp *.h
 ```
 for visual consistency.
+
+The formating template is located under `.clang-format` in the root directory
+of the project.
