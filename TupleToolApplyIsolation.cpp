@@ -182,7 +182,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle* mother
   }
   */  
   std::vector<const LHCb::Track*> daughtertracks;
-  daughtertracks.clear();
+  daughtertracks.clear();
   LHCb::Particle::ConstVector source;
   LHCb::Particle::ConstVector target;
   LHCb::Particle::ConstVector finalStates;
@@ -193,7 +193,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle* mother
   double bdt3 = -2;
   const LHCb::Particle* maxpart;
   const LHCb::Particle* part2;
-  const LHCb::Particle* part3;
+  const LHCb::Particle* part3;
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
   parts2VertexD.clear();
@@ -236,7 +236,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle* mother
   //default gives best tracks (why would you default to anything less than the best?)  
 
 
-  
+  
 
   LHCb::Vertex v;
   //double chi2ndof = 0;//oldvtx->chi2();
@@ -319,8 +319,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle* mother
 	//StatusCode dump2 = m_dist->distance((const LHCb::Particle *) part,(const LHCb::Vertex *)vd,D_ip,D_chi2);
 	    
 	    if(chi2 < 50){
-	        dummy = 4000;            float bdtval = m_Reader->EvaluateMVA( "BDT method" );
-            //warning() << "bdtval " << bdtval << " old maxbdt " << maxbdt << endreq;	        if (bdtval > maxbdt) {
+	        dummy = 4000;            float bdtval = m_Reader->EvaluateMVA( "BDT method" );
+            //warning() << "bdtval " << bdtval << " old maxbdt " << maxbdt << endreq;	        if (bdtval > maxbdt) {
 	            bdt3 = bdt2;
 	            bdt2 = maxbdt;
 	            maxbdt = bdtval;
