@@ -187,16 +187,16 @@ StatusCode TupleToolApplyIsolationVetoDst::fill(const Particle* mother, const Pa
     LHCb::Particle::ConstVector bDaughters = mother->daughtersVector();
     //Mu loop
     int iloop = 0;
-    //      warning() << "Head PID " << mother->particleID().pid() << endreq;
+    //      warning() << "Head PID " << mother->particleID().pid() << endmsg;
     for (LHCb::Particle::ConstVector::const_iterator itmp = bDaughters.begin();
          itmp != bDaughters.end(); ++itmp) {
-        //       warning() << "PID " << (*itmp)->particleID().pid() << endreq;
-        //       warning() << "Mass " << (*itmp)->momentum().M() << endreq;
+        //       warning() << "PID " << (*itmp)->particleID().pid() << endmsg;
+        //       warning() << "Mass " << (*itmp)->momentum().M() << endmsg;
         if ((*itmp)->particleID().abspid() == 421)
             theD = (*itmp);
     }
     if (!theD)
-        warning() << "NOT FOUND D0 " << endreq;
+        warning() << "NOT FOUND D0 " << endmsg;
     parts2VertexDst.push_back(theD);
     for (int i = 0; i < m_nWrite; i++) {
         maxbdt[i] = -2;
@@ -236,9 +236,9 @@ StatusCode TupleToolApplyIsolationVetoDst::fill(const Particle* mother, const Pa
         source = target;
     } while (target.size() > 0);
     if (msgLevel(MSG::DEBUG))
-        debug() << "Final states size= " << finalStates.size() << endreq;
-    //warning() << " D VERTEX CHI2 " << dv2.chi2() << " NDOF " << dv2.nDoF() << endreq;
-    //warning() << "DAUGHTER SIZE " << daughtertracks.size() << endreq;
+        debug() << "Final states size= " << finalStates.size() << endmsg;
+    //warning() << " D VERTEX CHI2 " << dv2.chi2() << " NDOF " << dv2.nDoF() << endmsg;
+    //warning() << "DAUGHTER SIZE " << daughtertracks.size() << endmsg;
     //default gives best tracks (why would you default to anything less than the best?)
 
     LHCb::Vertex v;
@@ -273,21 +273,21 @@ StatusCode TupleToolApplyIsolationVetoDst::fill(const Particle* mother, const Pa
 
         if (!exist<LHCb::Particle::Range>(*i + "/Particles")) {
             if (msgLevel(MSG::DEBUG))
-                debug() << "No particles at " << *i << " !!!!!" << endreq;
+                debug() << "No particles at " << *i << " !!!!!" << endmsg;
             continue;
         }
 
         LHCb::Particle::Range parts = get<LHCb::Particle::Range>(*i + "/Particles");
         if (msgLevel(MSG::DEBUG))
             debug() << "Getting particles from " << *i
-                    << " with " << (parts).size() << " particles" << endreq;
+                    << " with " << (parts).size() << " particles" << endmsg;
         //warning() << "Getting particles from " << *i
-        //                                  << " with " << (parts).size() << " particles" << endreq;
+        //                                  << " with " << (parts).size() << " particles" << endmsg;
         for (LHCb::Particle::Range::const_iterator iparts = (parts).begin();
              iparts != (parts).end(); ++iparts) {
             const LHCb::Particle* part = (*iparts);
 
-            //if(isTrackInDecay(part->proto()->track(),daughtertracks)) warning() << "FOUND DAUGHTER TRACK" << endreq;
+            //if(isTrackInDecay(part->proto()->track(),daughtertracks)) warning() << "FOUND DAUGHTER TRACK" << endmsg;
             if (part->proto()->track()->type() < 5 && !isTrackInDecay(part->proto()->track(), daughtertracks)) {
                 LHCb::Vertex vtxWithExtraTrack;
                 parts2Vertex.push_back(*iparts);
@@ -303,7 +303,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill(const Particle* mother, const Pa
                 type = part->proto()->track()->type();
                 if (newfdchi2 - oldfdchi2 < 0)
                     deltafd = deltafd * -1.;
-                //warning() << "DELTAFD " << deltafd << endreq;
+                //warning() << "DELTAFD " << deltafd << endmsg;
                 newfdchi2 = log10(newfdchi2);
                 if (part->proto()->track()->type() == 1)
                     pt = part->proto()->track()->momentum().z();
@@ -317,7 +317,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill(const Particle* mother, const Pa
                     StatusCode sc4 = m_pVertexFit->fit(parts2VertexDst, DstVertex, *newP);
                     parts2VertexDst.pop_back();
                     deltaMass = newP->momentum().M() - theD->momentum().M();
-                    //       warning() << "Dstar mass"<< newP->momentum().M() << " D mass " << theD->momentum().M() <<  "deltaMass " << deltaMass << " fit stats " <<  sc4 << endreq;
+                    //       warning() << "Dstar mass"<< newP->momentum().M() << " D mass " << theD->momentum().M() <<  "deltaMass " << deltaMass << " fit stats " <<  sc4 << endmsg;
                 }
                 //     warning() << "deltaMass " << deltaMass << " track type " << part->proto()->track()->type() << endr
                 bool deltaMassWindow = (deltaMass > 140 && deltaMass < 160);
@@ -412,7 +412,7 @@ const Vertex* TupleToolApplyIsolationVetoDst::originVertex(const Particle* top, 
 
     const SmartRefVector<LHCb::Particle>& dau = top->daughters();
     if (dau.empty()) {
-        // if (msgLevel(MSG::DEBUG)) debug() << " Particle has no daughters! "  << endreq;
+        // if (msgLevel(MSG::DEBUG)) debug() << " Particle has no daughters! "  << endmsg;
         return 0;
     }
 

@@ -190,7 +190,7 @@ StatusCode TupleToolTagDiscardDstMu::fill(const Particle* mother, const Particle
     LHCb::Vertex vtxTauDst;
     LHCb::Vertex vtxMuDst;
     sc = m_pVertexFit->fit(vtxMu, parts2VertexMu);
-    debug() << "MU VERTEX FIT STATUS " << sc << endreq;
+    debug() << "MU VERTEX FIT STATUS " << sc << endmsg;
     ;
 
     test &= tuple->column(prefix + "_DISCARDMu_CHI2", vtxMu.chi2());
@@ -216,7 +216,7 @@ StatusCode TupleToolTagDiscardDstMu::fill(const Particle* mother, const Particle
     sc = m_dist->distance(muMu, pislow, MupimuDoca, MupimuDocachi2);
     test &= tuple->column(prefix + "_DISCARDMu_PIMUDOCA", MupimuDoca);
 
-    debug() << "PAST FILL " << endreq;
+    debug() << "PAST FILL " << endmsg;
     //}
     // replaced by V.B. 20.Aug.2k+9: (parts2Vertex,vtxWithExtraTrack);
     // Remove the added track from parts2Vertex
@@ -234,7 +234,7 @@ const Vertex* TupleToolTagDiscardDstMu::originVertex(const Particle* top, const 
 
     const SmartRefVector<LHCb::Particle>& dau = top->daughters();
     if (dau.empty()) {
-        // if (msgLevel(MSG::DEBUG)) debug() << " Particle has no daughters! "  << endreq;
+        // if (msgLevel(MSG::DEBUG)) debug() << " Particle has no daughters! "  << endmsg;
         return 0;
     }
 
