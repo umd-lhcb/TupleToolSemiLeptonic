@@ -8,6 +8,6 @@ Obtained from Gregory Ciezarek. All rights reserved.
 ## Notes
 All `.cpp` and `.h` source files have been reformatted by:
 ```
-clang-format -i -style=WebKit *.cpp *.h
+clang-format -i -style=Google *.cpp *.h
 ```
 for visual consistency.
