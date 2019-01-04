@@ -1,5 +1,5 @@
-#ifndef TupleToolApplyIsolationVetoDst_H
-#define TupleToolApplyIsolationVetoDst_H 1
+#ifndef TUPLETOOLAPPLYISOLATIONVETODST_H
+#define TUPLETOOLAPPLYISOLATIONVETODST_H 1
 
 // Include files
 // from Gaudi
@@ -25,15 +25,15 @@ class Particle;
 class Vertex;
 };
 
-/** @class TupleToolVtxIsoln TupleToolVtxIsoln.h 
+/** @class TupleToolVtxIsoln TupleToolVtxIsoln.h
  *
  * \brief Fill isolation information for DecayTreeTuple
  *
- * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to vertex give delta chi2 < specified window 
- * - head_NOPARTWITHINCHI2WDW : no. of non-signal particles that when added to vertex give chi2 < specified window 
+ * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to vertex give delta chi2 < specified window
+ * - head_NOPARTWITHINCHI2WDW : no. of non-signal particles that when added to vertex give chi2 < specified window
  * head_SMALLESTCHI2: chi2 of smallest chi2 combination with any of the input Particles
  * head_SMALLESTDELTACHI2: delta chi2 of smallest delta chi2 combination with any of the input Particles
- * 
+ *
  * \sa DecayTreeTuple
  *
  *  @todo Maybe one should get Tracks instead of Particles?
@@ -81,4 +81,4 @@ private:
     std::string m_weightsName;
     std::vector<std::string> m_inputParticles;
 };
-#endif // TupleToolApplyIsolationVetoDst_H
+#endif // TUPLETOOLAPPLYISOLATIONVETODST_H

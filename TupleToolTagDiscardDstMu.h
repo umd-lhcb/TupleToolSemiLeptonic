@@ -1,5 +1,5 @@
-#ifndef MPATEL_TupleToolTagDiscardDstMu_H
-#define MPATEL_TupleToolTagDiscardDstMu_H 1
+#ifndef TUPLETOOLTAGDISCARDDSTMU_H
+#define TUPLETOOLTAGDISCARDDSTMU_H 1
 
 // Include files
 // from Gaudi
@@ -81,4 +81,4 @@ private:
     std::vector<std::string> m_inputParticles;
 };
 
-#endif // MPATEL_TUPLETOOLGEOMETRY_H
+#endif // TUPLETOOLTAGDISCARDDSTMU_H
