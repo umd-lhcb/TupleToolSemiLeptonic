@@ -3,7 +3,13 @@ This project provides two additional classes for the LHCb `Analysis/Phys/DecayTr
 package for lepton flavor universality violation analysis in the semileptonic
 channel.
 
-Obtained from Gregory Ciezarek. All rights reserved.
+Obtained from Patrick Owen, from the following link:
+```
+https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/tree/master/tuple_production/tuple_tools_src
+```
+
+All rights reserved.
+
 
 ## Coding style
 All `.cpp` and `.h` source files have been reformatted by:
