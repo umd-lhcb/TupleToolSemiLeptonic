@@ -1,5 +1,5 @@
-#ifndef TUPLETOOLAPPLYISOLATION_H
-#define TUPLETOOLAPPLYISOLATION_H 1
+#ifndef TupleToolApplyIsolation_H
+#define TupleToolApplyIsolation_H 1
 
 // Include files
 // from Gaudi
@@ -82,4 +82,4 @@ class TupleToolApplyIsolation : public TupleToolBase,
   std::string m_weightsName;
   std::vector<std::string> m_inputParticles;
 };
-#endif  // TUPLETOOLAPPLYISOLATION_H
+#endif  // TupleToolApplyIsolation_H
