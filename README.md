@@ -1,7 +1,7 @@
 # TupleToolSemiLeptonic
-This project provides two additional classes for the LHCb `Analysis/Phys/DecayTreeTuple`
-package for lepton flavor universality violation analysis in the semileptonic
-channel.
+This project provides several additional classes for the LHCb
+`Analysis/Phys/DecayTreeTuple` package for lepton flavor universality violation
+analysis in the semileptonic channel.
 
 Obtained from Patrick Owen, from the following link:
 ```
