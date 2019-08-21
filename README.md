@@ -20,8 +20,8 @@ of the project.
 ## Acknowledgment
 * `TupleToolApplyIsolationVetoDst, TupleToolTagDiscardDstMu` are used in LHCb
   run-1 semileptonic analysis. We obtained these from Phoebe Hamilton.
-* `TupleToolApplyIsolation, TupleToolSLTruth`  are obtained from Patrick Owen.
-  These can be found at [1].
+* `TupleToolApplyIsolation, TupleToolTauMuDiscrVars` are obtained from Patrick
+  Owen. These can be found at [1].
 
 
 [1]: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/tree/master/tuple_production/tuple_tools_src
