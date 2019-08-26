@@ -17,6 +17,17 @@ The formating template is located under `.clang-format` in the root directory
 of the project.
 
 
+## Installation on lxplus
+Type these commands in your terminal:
+
+```
+lb-dev DaVinci/<version> && cd DaVinciDev_<version>
+git lb-use TupleToolSemiLeptonic https://github.com/umd-lhcb/TupleToolSemiLeptonic.git
+git lb-checkout TupleToolSemiLeptonic/master Phys/TupleToolSemiLeptonic
+make configure && make
+```
+
+
 ## Acknowledgment
 * `TupleToolApplyIsolationVetoDst, TupleToolTagDiscardDstMu` are used in LHCb
   run-1 semileptonic analysis. We obtained these from Phoebe Hamilton.
