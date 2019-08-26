@@ -14,7 +14,6 @@
 #include "GaudiAlg/Tuple.h"
 #include "GaudiAlg/TupleObj.h"
 
-#include <functional>
 #include "Event/MCParticle.h"
 #include "Event/Particle.h"
 #include "GaudiKernel/DeclareFactoryEntries.h"
@@ -22,6 +21,8 @@
 #include "Linker/LinkerTable.h"
 #include "TrackInterfaces/ITrackVertexer.h"
 
+#include <functional>
+#include <iostream>
 #include <map>
 #include <string>
 
@@ -223,11 +224,11 @@ StatusCode TupleToolApplyIsolation::fill(const Particle* mother,
     source = target;
   } while (target.size() > 0);
   if (msgLevel(MSG::DEBUG))
-    debug() << "Final states size= " << finalStates.size() << endl;
+    debug() << "Final states size= " << finalStates.size() << std::endl;
   // warning() << " D VERTEX CHI2 " << dv2.chi2() << " NDOF " << dv2.nDoF() <<
-  // endl; warning() << "DAUGHTER SIZE " << daughtertracks.size() << endl;
-  // default gives best tracks (why would you default to anything less than the
-  // best?)
+  // std::endl; warning() << "DAUGHTER SIZE " << daughtertracks.size() <<
+  // std::endl; default gives best tracks (why would you default to anything
+  // less than the best?)
 
   LHCb::Vertex v;
   // double chi2ndof = 0;//oldvtx->chi2();
@@ -252,17 +253,17 @@ StatusCode TupleToolApplyIsolation::fill(const Particle* mother,
        i != m_inputParticles.end(); ++i) {
     if (!exist<LHCb::Particle::Range>(*i + "/Particles")) {
       if (msgLevel(MSG::DEBUG))
-        debug() << "No particles at " << *i << " !!!!!" << endl;
+        debug() << "No particles at " << *i << " !!!!!" << std::endl;
       continue;
     }
 
     LHCb::Particle::Range parts = get<LHCb::Particle::Range>(*i + "/Particles");
     if (msgLevel(MSG::DEBUG))
       debug() << "Getting particles from " << *i << " with " << (parts).size()
-              << " particles" << endl;
+              << " particles" << std::endl;
     // warning() << "Getting particles from " << *i
     //                                  << " with " << (parts).size() << "
-    //                                  particles" << endl;
+    //                                  particles" << std::endl;
     //
 
     for (LHCb::Particle::Range::const_iterator iparts = (parts).begin();
@@ -270,7 +271,7 @@ StatusCode TupleToolApplyIsolation::fill(const Particle* mother,
       const LHCb::Particle* part = (*iparts);
 
       // if(isTrackInDecay(part->proto()->track(),daughtertracks)) warning() <<
-      // "FOUND DAUGHTER TRACK" << endl;
+      // "FOUND DAUGHTER TRACK" << std::endl;
       if (part->proto()->track()->type() < 5 &&
           !isTrackInDecay(part->proto()->track(), daughtertracks)) {
         ghostprob = part->proto()->track()->ghostProbability();
@@ -298,7 +299,7 @@ StatusCode TupleToolApplyIsolation::fill(const Particle* mother,
         deltafd = log10(fabs(newfdchi2 - oldfdchi2)) - 7;
         type = part->proto()->track()->type();
         if (newfdchi2 - oldfdchi2 < 0) deltafd = deltafd * -1.;
-        // warning() << "DELTAFD " << deltafd << endl;
+        // warning() << "DELTAFD " << deltafd << std::endl;
         newfdchi2 = log10(newfdchi2);
         if (part->proto()->track()->type() == 1)
           pt = part->proto()->track()->momentum().z();
@@ -306,7 +307,7 @@ StatusCode TupleToolApplyIsolation::fill(const Particle* mother,
           pt = part->proto()->track()->pt();
 
         // warning() << "type " << type << " opening " << opening << " pt " <<
-        // pt << endl;
+        // pt << std::endl;
 
         // if(track->info(LHCb::Track::CloneDist, -1.) > 0){continue;}
         StatusCode sc = StatusCode::SUCCESS;
@@ -322,7 +323,7 @@ StatusCode TupleToolApplyIsolation::fill(const Particle* mother,
           dummy = 4000;
           float bdtval = m_Reader->EvaluateMVA("BDT method");
           // warning() << "bdtval " << bdtval << " old maxbdt " << maxbdt <<
-          // endl;
+          // std::endl;
           if (bdtval > maxbdt) {
             bdt4 = bdt3;
             bdt3 = bdt2;
@@ -378,7 +379,7 @@ StatusCode TupleToolApplyIsolation::fill(const Particle* mother,
             _sc4 = sc3.getCode();
             angle4 = opening;
           }
-          // warning() << "new max bdtval " << maxbdt << endl;
+          // warning() << "new max bdtval " << maxbdt << std::endl;
         }
       }
     }  // end particles loop
@@ -582,7 +583,7 @@ const Vertex* TupleToolApplyIsolation::originVertex(const Particle* top,
   const SmartRefVector<LHCb::Particle>& dau = top->daughters();
   if (dau.empty()) {
     // if (msgLevel(MSG::DEBUG)) debug() << " Particle has no daughters! "  <<
-    // endl;
+    // std::endl;
     return 0;
   }
 
