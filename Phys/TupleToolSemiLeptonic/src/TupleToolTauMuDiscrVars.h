@@ -47,8 +47,8 @@ class VertexBase;
  *
  *  If Verbose is true:
  *
- * - head_TOPPV_[X|Y|Z] : PhysDesktop::relatedVertex() of the top of decay chain
- * position
+ * - head_TOPPV_[X|Y|Z] : PhysDesktop::relatedVertex() of the top of decay
+ * chain position
  * - head_TOPPV_[X|Y|Z]ERR : PhysDesktop::relatedVertex() of the top of decay
  * chain position error estimate
  * - head_TOPPV_CHI2 : PhysDesktop::relatedVertex() of the top of decay chain
@@ -96,56 +96,59 @@ class TupleToolTauMuDiscrVars : public TupleToolBase,
                                 virtual public IParticleTupleTool {
  public:
   /// Standard constructor
-  TupleToolTauMuDiscrVars(const std::string& type, const std::string& name,
-                          const IInterface* parent);
+  TupleToolTauMuDiscrVars( const std::string& type, const std::string& name,
+                           const IInterface* parent );
 
   virtual ~TupleToolTauMuDiscrVars(){};  ///< Destructor
 
   virtual StatusCode initialize();
 
-  StatusCode fill(const LHCb::Particle*, const LHCb::Particle*,
-                  const std::string&, Tuples::Tuple&);
+  StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
+                   const std::string&, Tuples::Tuple& );
 
  private:
   /// fill end vertex stuff
-  StatusCode fillVertexFull(const LHCb::VertexBase* vtx,
-                            const LHCb::Particle* P, const std::string& head,
-                            const std::string& vtx_name, Tuples::Tuple&) const;
+  StatusCode fillVertexFull( const LHCb::VertexBase* vtx,
+                             const LHCb::Particle* P, const std::string& head,
+                             const std::string& vtx_name,
+                             Tuples::Tuple& ) const;
 
   /// origin vertex
-  const LHCb::VertexBase* originVertex(const LHCb::Particle* top,
-                                       const LHCb::Particle* P) const;
+  const LHCb::VertexBase* originVertex( const LHCb::Particle* top,
+                                        const LHCb::Particle* P ) const;
   /// fill related pV stuff
-  StatusCode fillBPV(const LHCb::VertexBase* primVtx, const LHCb::Particle* P,
-                     const std::string& prefix, Tuples::Tuple& tuple,
-                     const std::string& trail = "") const;
+  StatusCode fillBPV( const LHCb::VertexBase* primVtx, const LHCb::Particle* P,
+                      const std::string& prefix, Tuples::Tuple& tuple,
+                      const std::string& trail = "" ) const;
 
   /// fill min IP
-  StatusCode fillMinIP(const LHCb::Particle* P, const std::string& prefix,
-                       Tuples::Tuple& tuple) const;
+  StatusCode fillMinIP( const LHCb::Particle* P, const std::string& prefix,
+                        Tuples::Tuple& tuple ) const;
 
   /// fill end vertex stuff
-  StatusCode fillVertex(const LHCb::VertexBase* vtx,
-                        const std::string& vtx_name, Tuples::Tuple&) const;
+  StatusCode fillVertex( const LHCb::VertexBase* vtx,
+                         const std::string& vtx_name, Tuples::Tuple& ) const;
 
   /// fill flight
-  StatusCode fillFlight(const LHCb::VertexBase* oriVtx, const LHCb::Particle* P,
-                        const std::string& prefix, Tuples::Tuple& tuple,
-                        const std::string& trail = "") const;
+  StatusCode fillFlight( const LHCb::VertexBase* oriVtx,
+                         const LHCb::Particle* P, const std::string& prefix,
+                         Tuples::Tuple&     tuple,
+                         const std::string& trail = "" ) const;
 
-  double dira(const LHCb::VertexBase* oriVtx, const LHCb::Particle* P) const {
-    if (!P || !oriVtx) {
-      Exception("Wrong use of dira");
+  double dira( const LHCb::VertexBase* oriVtx,
+               const LHCb::Particle*   P ) const {
+    if ( !P || !oriVtx ) {
+      Exception( "Wrong use of dira" );
       return -1501.;
     }
     const LHCb::Vertex* evtx = P->endVertex();
-    if (!evtx) {
-      Warning("Cannot find end vertex", StatusCode::SUCCESS, 1).ignore();
+    if ( !evtx ) {
+      Warning( "Cannot find end vertex", StatusCode::SUCCESS, 1 ).ignore();
       return -999.;
     }
     const Gaudi::XYZVector& A = P->momentum().Vect();
-    const Gaudi::XYZVector B = evtx->position() - oriVtx->position();
-    return A.Dot(B) / std::sqrt(A.Mag2() * B.Mag2());
+    const Gaudi::XYZVector  B = evtx->position() - oriVtx->position();
+    return A.Dot( B ) / std::sqrt( A.Mag2() * B.Mag2() );
   }
 
  private:
@@ -159,6 +162,6 @@ class TupleToolTauMuDiscrVars : public TupleToolBase,
   IDVAlgorithm* m_dva;
 
   IPVReFitter* m_pvReFitter;
-  std::string m_pvReFitterName;
+  std::string  m_pvReFitterName;
 };
 #endif  // JBOREL_TUPLETOOLTAUMUDISCRVARS_H
