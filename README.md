@@ -29,10 +29,10 @@ make configure && make
 
 
 ## Acknowledgment
-* `TupleToolApplyIsolationVetoDst, TupleToolTagDiscardDstMu` are used in LHCb
-  run-1 semileptonic analysis. We obtained these from Phoebe Hamilton.
-* `TupleToolApplyIsolation, TupleToolTauMuDiscrVars` are obtained from Patrick
-  Owen. These can be found at [1].
+This repository is a superset of `SemileptonicCommonTools` [1], with additional
+tools coming from `B02DplusTauNu` analysis [2]. We made some changes and are
+trying to port them to newest version of `DaVinci`.
 
 
-[1]: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/tree/master/tuple_production/tuple_tools_src
+[1]: https://gitlab.cern.ch/lhcb-slb/SemileptonicCommonTools
+[2]: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/tree/master/tuple_production/tuple_tools_src
