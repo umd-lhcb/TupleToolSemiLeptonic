@@ -1,9 +1,10 @@
 // Include files
 
 // from Gaudi
+#include "GaudiKernel/ToolFactory.h"
 
 // local
-#include "TupleToolApplyIsolation.h"
+#include "TupleToolApplyIsolationMC.h"
 
 #include <Kernel/GetIDVAlgorithm.h>
 #include <Kernel/IDVAlgorithm.h>
@@ -13,6 +14,7 @@
 #include "GaudiAlg/Tuple.h"
 #include "GaudiAlg/TupleObj.h"
 
+#include <functional>
 #include "Event/MCParticle.h"
 #include "Event/Particle.h"
 #include "GaudiKernel/DeclareFactoryEntries.h"
@@ -20,7 +22,6 @@
 #include "Linker/LinkerTable.h"
 #include "TrackInterfaces/ITrackVertexer.h"
 
-#include <functional>
 #include <map>
 #include <string>
 
@@ -45,15 +46,15 @@
 
 // Declaration of the Tool Factory
 // actually acts as a using namespace TupleTool
-DECLARE_TOOL_FACTORY( TupleToolApplyIsolation );
+DECLARE_TOOL_FACTORY( TupleToolApplyIsolationMC );
 
 using namespace LHCb;
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-TupleToolApplyIsolation::TupleToolApplyIsolation( const std::string& type,
-                                                  const std::string& name,
-                                                  const IInterface*  parent )
+TupleToolApplyIsolationMC::TupleToolApplyIsolationMC(
+    const std::string& type, const std::string& name,
+    const IInterface* parent )
     : TupleToolBase( type, name, parent ),
       m_dva( 0 ),
       m_dist( 0 ),
@@ -73,11 +74,15 @@ TupleToolApplyIsolation::TupleToolApplyIsolation( const std::string& type,
   ;
   declareProperty( "OutputSuffix", m_outputSuffix = "" );
   declareProperty( "WeightsFile", m_weightsName = "weights.xml" );
+
+  m_p2mcAssocTypes.push_back( "DaVinciSmartAssociator" );
+  m_p2mcAssocTypes.push_back( "MCMatchObjP2MCRelator" );
+  declareProperty( "IP2MCPAssociatorTypes", m_p2mcAssocTypes );
 }
 
 //=============================================================================
 
-StatusCode TupleToolApplyIsolation::initialize() {
+StatusCode TupleToolApplyIsolationMC::initialize() {
   if ( !TupleToolBase::initialize() ) return StatusCode::FAILURE;
 
   m_dva = Gaudi::Utils::getIDVAlgorithm( contextSvc() );
@@ -90,9 +95,9 @@ StatusCode TupleToolApplyIsolation::initialize() {
     return StatusCode::FAILURE;
   }
   m_pvReFitter = tool<IPVReFitter>( "AdaptivePVReFitter", this );
-  m_pVertexFit = tool<IVertexFit>( "LoKi::VertexFitter", this );
   // m_pVertexFit= m_dva->vertexFitter();
-  // m_pVertexFit= tool<ITrackVertexer>
+
+  m_pVertexFit = tool<IVertexFit>( "LoKi::VertexFitter", this );
 
   if ( !m_pVertexFit ) {
     Error( "Unable to retrieve the IVertexFit tool" );
@@ -124,33 +129,47 @@ StatusCode TupleToolApplyIsolation::initialize() {
     Error( "Unable to retrieve the IVertexFit tool" );
     return StatusCode::FAILURE;
   }
+
+  m_p2mcAssocs.clear();
+  for ( std::vector<std::string>::const_iterator iMCAss =
+            m_p2mcAssocTypes.begin();
+        iMCAss != m_p2mcAssocTypes.end(); ++iMCAss ) {
+    m_p2mcAssocs.push_back( tool<IParticle2MCAssociator>( *iMCAss, this ) );
+  }
+  if ( m_p2mcAssocs.empty() ) {
+    return Error( "No MC associators configured" );
+  }
+
   return StatusCode::SUCCESS;
 }
 
 //=============================================================================
 
-StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
-                                          const Particle*    P,
-                                          const std::string& head,
-                                          Tuples::Tuple&     tuple ) {
+StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
+                                            const Particle*    P,
+                                            const std::string& head,
+                                            Tuples::Tuple&     tuple ) {
   const std::string prefix = fullName( head );
   Assert( P && mother && m_dist,
           "This should not happen, you are inside TupleToolVtxIsoln.cpp :(" );
 
-  bool  test   = true;
-  float charge = 0;
-  float type   = 0;
-  float px     = 0;
-  float py     = 0;
-  float pz     = 0;
-  float pe     = 0;
-  float pidk   = 0;
-  float pidp   = 0;
-  float nnk    = 0;
-  float nnpi   = 0;
-  float nnp    = 0;
-  float nng    = 0;
-  float ismuon = 0;
+  bool  test        = true;
+  float charge      = 0;
+  float type        = 0;
+  float px          = 0;
+  float py          = 0;
+  float pz          = 0;
+  float pe          = 0;
+  float ptransverse = 0;
+  float eta         = 0;
+  float pidk        = 0;
+  float pidp        = 0;
+  float nnk         = 0;
+  float nnpi        = 0;
+  float nnp         = 0;
+  float nng         = 0;
+  float ismuon      = 0;
+  int   truepid     = 0;
 
   /*
   const LHCb::Vertex* vtx;
@@ -173,24 +192,12 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   LHCb::Particle::ConstVector finalStates;
   LHCb::Particle::ConstVector parts2Vertex;
   LHCb::Particle::ConstVector parts2VertexD;
-  double                      angle, angle2, angle3, angle4;
-  double                      maxchi2 = -99;
-  double                      mchi22  = -99;
-  double                      mchi23  = -99;
-  double                      mchi24  = -99;
-  double                      maxbdt  = -2;
-  double                      bdt2    = -2;
-  double                      bdt3    = -2;
-  double                      bdt4    = -2;
-  int                         trueID  = 0;
-  int                         _sc     = -999;
-  int                         _sc2    = -999;
-  int                         _sc3    = -999;
-  int                         _sc4    = -999;
+  double                      maxbdt = -2;
+  double                      bdt2   = -2;
+  double                      bdt3   = -2;
   const LHCb::Particle*       maxpart;
   const LHCb::Particle*       part2;
   const LHCb::Particle*       part3;
-  const LHCb::Particle*       part4;
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
   parts2VertexD.clear();
@@ -227,10 +234,10 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     source = target;
   } while ( target.size() > 0 );
   if ( msgLevel( MSG::DEBUG ) )
-    debug() << "Final states size= " << finalStates.size() << endmsg;
+    debug() << "Final states size= " << finalStates.size() << std::endl;
   // warning() << " D VERTEX CHI2 " << dv2.chi2() << " NDOF " << dv2.nDoF() <<
-  // endmsg; warning() << "DAUGHTER SIZE " << daughtertracks.size() <<
-  // endmsg; default gives best tracks (why would you default to anything
+  // std::endl; warning() << "DAUGHTER SIZE " << daughtertracks.size() <<
+  // std::endl; default gives best tracks (why would you default to anything
   // less than the best?)
 
   LHCb::Vertex v;
@@ -256,7 +263,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
         i != m_inputParticles.end(); ++i ) {
     if ( !exist<LHCb::Particle::Range>( *i + "/Particles" ) ) {
       if ( msgLevel( MSG::DEBUG ) )
-        debug() << "No particles at " << *i << " !!!!!" << endmsg;
+        debug() << "No particles at " << *i << " !!!!!" << std::endl;
       continue;
     }
 
@@ -264,25 +271,47 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
         get<LHCb::Particle::Range>( *i + "/Particles" );
     if ( msgLevel( MSG::DEBUG ) )
       debug() << "Getting particles from " << *i << " with "
-              << ( parts ).size() << " particles" << endmsg;
+              << ( parts ).size() << " particles" << std::endl;
     // warning() << "Getting particles from " << *i
     //                                  << " with " << (parts).size() << "
-    //                                  particles" << endmsg;
-    //
-
+    //                                  particles" << std::endl;
     for ( LHCb::Particle::Range::const_iterator iparts = ( parts ).begin();
           iparts != ( parts ).end(); ++iparts ) {
       const LHCb::Particle* part = ( *iparts );
 
       // if(isTrackInDecay(part->proto()->track(),daughtertracks)) warning() <<
-      // "FOUND DAUGHTER TRACK" << endmsg;
+      // "FOUND DAUGHTER TRACK" << std::endl;
       if ( part->proto()->track()->type() < 5 &&
            !isTrackInDecay( part->proto()->track(), daughtertracks ) ) {
+        LHCb::Vertex vtxWithExtraTrack;
+        parts2Vertex.push_back( *iparts );
+        StatusCode sc3 = m_pVertexFit->fit( vtxWithExtraTrack, parts2Vertex );
+        parts2Vertex.pop_back();
+        opening   = getopening( part->proto()->track(), P );
+        minipchi2 = getminipchi( part );
+        newfdchi2 =
+            fabs( getfdchi2( part->proto()->track(), vtxWithExtraTrack ) );
+        oldfdchi2 = fabs( getfdchi2( part->proto()->track(), v ) );
         ghostprob = part->proto()->track()->ghostProbability();
+        trackchi2 = part->proto()->track()->chi2PerDoF();
+        deltafd   = log10( fabs( newfdchi2 - oldfdchi2 ) ) - 7;
+        type      = part->proto()->track()->type();
+        if ( newfdchi2 - oldfdchi2 < 0 ) deltafd = deltafd * -1.;
+        // warning() << "Flight " << newfdchi2 << " DELTAFD " << deltafd << "
+        // MINIPCHI2 " << minipchi2 << " Pt " << pt << std::endl;
+        newfdchi2 = log10( newfdchi2 );
+        if ( part->proto()->track()->type() == 1 )
+          pt = part->proto()->track()->momentum().z();
+        else
+          pt = part->proto()->track()->pt();
+
         if ( ghostprob > 0.5 ) {
           continue;
         }
-        opening = getopening( part->proto()->track(), P );
+
+        // warning() << "type " << type << " opening " << opening << " chi2 "
+        // << chi2 << std::endl;
+
         if ( part->proto()->track()->type() == 3 && !( opening > 0.994 ) ) {
           continue;
         }
@@ -292,27 +321,6 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
         if ( part->proto()->track()->type() == 1 && !( opening > 0.98 ) ) {
           continue;
         }
-        LHCb::Vertex vtxWithExtraTrack;
-        parts2Vertex.push_back( *iparts );
-        StatusCode sc3 = m_pVertexFit->fit( vtxWithExtraTrack, parts2Vertex );
-        parts2Vertex.pop_back();
-        minipchi2 = getminipchi( part );
-        newfdchi2 = getfdchi2( part->proto()->track(), vtxWithExtraTrack );
-        oldfdchi2 = getfdchi2( part->proto()->track(), v );
-        trackchi2 = part->proto()->track()->chi2PerDoF();
-        deltafd   = log10( fabs( newfdchi2 - oldfdchi2 ) ) - 7;
-        type      = part->proto()->track()->type();
-        if ( newfdchi2 - oldfdchi2 < 0 ) deltafd = deltafd * -1.;
-        // warning() << "DELTAFD " << deltafd << endmsg;
-        newfdchi2 = log10( newfdchi2 );
-        if ( part->proto()->track()->type() == 1 )
-          pt = part->proto()->track()->momentum().z();
-        else
-          pt = part->proto()->track()->pt();
-
-        // warning() << "type " << type << " opening " << opening << " pt " <<
-        // pt << endmsg;
-
         // if(track->info(LHCb::Track::CloneDist, -1.) > 0){continue;}
         StatusCode sc = StatusCode::SUCCESS;
         double     tmpip, tmpchi2;
@@ -322,78 +330,49 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
         chi2 = tmpchi2;
         // StatusCode dump2 = m_dist->distance((const LHCb::Particle *)
         // part,(const LHCb::Vertex *)vd,D_ip,D_chi2);
-
+        /*
+            if(newfdchi2 != newfdchi2){
+	        warning() << "NEGATIVE
+           FDCHI2 " << " vertex chi2 " << chi2 << std::endl;
+ warning() <<
+           "NEW VERTEX " << vtxWithExtraTrack.position().z() << " OLD VERTEX "
+           << v.position().z() << std::endl;
+	        }
+	        */
         if ( chi2 < 50 ) {
           dummy        = 4000;
           float bdtval = m_Reader->EvaluateMVA( "BDT method" );
           // warning() << "bdtval " << bdtval << " old maxbdt " << maxbdt <<
-          // endmsg;
+          // std::endl;
           if ( bdtval > maxbdt ) {
-            bdt4    = bdt3;
             bdt3    = bdt2;
             bdt2    = maxbdt;
             maxbdt  = bdtval;
-            part4   = part3;
             part3   = part2;
             part2   = maxpart;
             maxpart = part;
-            mchi24  = mchi23;
-            mchi23  = mchi22;
-            mchi22  = maxchi2;
-            maxchi2 = tmpchi2;
-            _sc4    = _sc3;
-            _sc3    = _sc2;
-            _sc2    = _sc;
-            _sc     = sc3.getCode();
-            angle4  = angle3;
-            angle3  = angle2;
-            angle2  = angle;
-            angle   = opening;
           } else if ( bdtval > bdt2 ) {
-            bdt4   = bdt3;
-            bdt3   = bdt2;
-            bdt2   = bdtval;
-            part4  = part3;
-            part3  = part2;
-            part2  = part;
-            mchi24 = mchi23;
-            mchi23 = mchi22;
-            mchi22 = tmpchi2;
-            _sc4   = _sc3;
-            _sc3   = _sc2;
-            _sc2   = sc3.getCode();
-            angle4 = angle3;
-            angle3 = angle2;
-            angle2 = opening;
+            bdt3  = bdt2;
+            bdt2  = bdtval;
+            part3 = part2;
+            part2 = part;
           } else if ( bdtval > bdt3 ) {
-            bdt4   = bdt3;
-            bdt3   = bdtval;
-            part4  = part3;
-            part3  = part;
-            mchi24 = mchi23;
-            mchi23 = tmpchi2;
-            _sc4   = _sc3;
-            _sc3   = sc3.getCode();
-            angle4 = angle3;
-            angle3 = opening;
-          } else if ( bdtval > bdt3 ) {
-            bdt4   = bdtval;
-            part4  = part;
-            mchi24 = tmpchi2;
-            _sc4   = sc3.getCode();
-            angle4 = opening;
+            bdt3  = bdtval;
+            part3 = part;
           }
-          // warning() << "new max bdtval " << maxbdt << endmsg;
+          // warning() << "new max bdtval " << maxbdt << std::endl;
         }
       }
     }  // end particles loop
   }    // end particle types loop
 
   if ( maxbdt > -1 ) {
-    pe   = maxpart->momentum().E();
-    px   = maxpart->momentum().Px();
-    py   = maxpart->momentum().Py();
-    pz   = maxpart->momentum().Pz();
+    pe          = maxpart->momentum().E();
+    px          = maxpart->momentum().Px();
+    py          = maxpart->momentum().Py();
+    pz          = maxpart->momentum().Pz();
+    ptransverse = maxpart->momentum().Pt();
+    eta         = maxpart->momentum().Eta();
     pidk = maxpart->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
     pidp = maxpart->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
     nnp  = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
@@ -408,18 +387,20 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     type                   = maxpart->proto()->track()->type();
     const MuonPID* muonPID = maxpart->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-
-    const LHCb::MCParticle* mcp( NULL );
-    if ( msgLevel( MSG::VERBOSE ) )
-      verbose() << "Getting related MCP to " << maxpart << endmsg;
-    mcp = m_p2mcAssoc->relatedMCP( maxpart );
-    if ( msgLevel( MSG::VERBOSE ) ) verbose() << "Got mcp " << mcp << endmsg;
-    trueID = ( mcp ? mcp->particleID().pid() : 0 );
+    // -- Retrieve truth-level information
+    truepid = 0;
+    const LHCb::MCParticle* mcmaxpart( NULL );
+    for ( std::vector<IParticle2MCAssociator*>::const_iterator iMCAss =
+              m_p2mcAssocs.begin();
+          iMCAss != m_p2mcAssocs.end(); ++iMCAss ) {
+      mcmaxpart = ( *iMCAss )->relatedMCP( maxpart );
+      if ( mcmaxpart ) {
+        truepid = mcmaxpart->particleID().pid();
+        break;
+      }
+    }
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI2" + m_outputSuffix, maxchi2 );
-  tuple->column( prefix + "_ISOLATION_ANGLE" + m_outputSuffix, angle );
-  tuple->column( prefix + "_ISOLATION_SC" + m_outputSuffix, _sc );
   tuple->column( prefix + "_ISOLATION_BDT" + m_outputSuffix, maxbdt );
   tuple->column( prefix + "_ISOLATION_CHARGE" + m_outputSuffix, charge );
   tuple->column( prefix + "_ISOLATION_Type" + m_outputSuffix, type );
@@ -427,6 +408,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_PX" + m_outputSuffix, px );
   tuple->column( prefix + "_ISOLATION_PY" + m_outputSuffix, py );
   tuple->column( prefix + "_ISOLATION_PZ" + m_outputSuffix, pz );
+  tuple->column( prefix + "_ISOLATION_PT" + m_outputSuffix, ptransverse );
+  tuple->column( prefix + "_ISOLATION_ETA" + m_outputSuffix, eta );
   tuple->column( prefix + "_ISOLATION_PIDK" + m_outputSuffix, pidk );
   tuple->column( prefix + "_ISOLATION_PIDp" + m_outputSuffix, pidp );
   tuple->column( prefix + "_ISOLATION_NNk" + m_outputSuffix, nnk );
@@ -434,19 +417,21 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_NNp" + m_outputSuffix, nnp );
   tuple->column( prefix + "_ISOLATION_IsMuon" + m_outputSuffix, ismuon );
   tuple->column( prefix + "_ISOLATION_NNghost" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_TRUEID" + m_outputSuffix, trueID );
+  tuple->column( prefix + "_ISOLATION_TruePID" + m_outputSuffix, truepid );
 
   if ( bdt2 > -1 ) {
-    pe   = part2->momentum().E();
-    px   = part2->momentum().Px();
-    py   = part2->momentum().Py();
-    pz   = part2->momentum().Pz();
-    pidk = part2->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
-    pidp = part2->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
-    nnp  = part2->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
-    nnk  = part2->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
-    nnpi = part2->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
-    nng  = part2->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    pe          = part2->momentum().E();
+    px          = part2->momentum().Px();
+    py          = part2->momentum().Py();
+    pz          = part2->momentum().Pz();
+    ptransverse = part2->momentum().Pt();
+    eta         = part2->momentum().Eta();
+    pidk        = part2->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
+    pidp        = part2->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
+    nnp         = part2->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
+    nnk         = part2->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
+    nnpi        = part2->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
+    nng = part2->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
     if ( part2->proto()->track()->type() == 1 ) {
       charge = 0;
     } else {
@@ -455,17 +440,20 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     type                   = part2->proto()->track()->type();
     const MuonPID* muonPID = part2->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    const LHCb::MCParticle* mcp( NULL );
-    if ( msgLevel( MSG::VERBOSE ) )
-      verbose() << "Getting related MCP to " << part2 << endmsg;
-    mcp = m_p2mcAssoc->relatedMCP( part2 );
-    if ( msgLevel( MSG::VERBOSE ) ) verbose() << "Got mcp " << mcp << endmsg;
-    trueID = ( mcp ? mcp->particleID().pid() : 0 );
+    // -- Retrieve truth-level information
+    truepid = 0;
+    const LHCb::MCParticle* mcpart2( NULL );
+    for ( std::vector<IParticle2MCAssociator*>::const_iterator iMCAss =
+              m_p2mcAssocs.begin();
+          iMCAss != m_p2mcAssocs.end(); ++iMCAss ) {
+      mcpart2 = ( *iMCAss )->relatedMCP( part2 );
+      if ( mcpart2 ) {
+        truepid = mcpart2->particleID().pid();
+        break;
+      }
+    }
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI22" + m_outputSuffix, mchi22 );
-  tuple->column( prefix + "_ISOLATION_SC2" + m_outputSuffix, _sc2 );
-  tuple->column( prefix + "_ISOLATION_ANGLE2" + m_outputSuffix, angle2 );
   tuple->column( prefix + "_ISOLATION_BDT2" + m_outputSuffix, bdt2 );
   tuple->column( prefix + "_ISOLATION_CHARGE2" + m_outputSuffix, charge );
   tuple->column( prefix + "_ISOLATION_Type2" + m_outputSuffix, type );
@@ -473,6 +461,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_PX2" + m_outputSuffix, px );
   tuple->column( prefix + "_ISOLATION_PY2" + m_outputSuffix, py );
   tuple->column( prefix + "_ISOLATION_PZ2" + m_outputSuffix, pz );
+  tuple->column( prefix + "_ISOLATION_PT2" + m_outputSuffix, ptransverse );
+  tuple->column( prefix + "_ISOLATION_ETA2" + m_outputSuffix, eta );
   tuple->column( prefix + "_ISOLATION_PIDK2" + m_outputSuffix, pidk );
   tuple->column( prefix + "_ISOLATION_PIDp2" + m_outputSuffix, pidp );
   tuple->column( prefix + "_ISOLATION_NNk2" + m_outputSuffix, nnk );
@@ -480,19 +470,21 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_NNp2" + m_outputSuffix, nnp );
   tuple->column( prefix + "_ISOLATION_IsMuon2" + m_outputSuffix, ismuon );
   tuple->column( prefix + "_ISOLATION_NNghost2" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_TRUEID2" + m_outputSuffix, trueID );
+  tuple->column( prefix + "_ISOLATION_TruePID2" + m_outputSuffix, truepid );
 
   if ( bdt3 > -1 ) {
-    pe   = part3->momentum().E();
-    px   = part3->momentum().Px();
-    py   = part3->momentum().Py();
-    pz   = part3->momentum().Pz();
-    pidk = part3->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
-    pidp = part3->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
-    nnp  = part3->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
-    nnk  = part3->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
-    nnpi = part3->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
-    nng  = part3->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    pe          = part3->momentum().E();
+    px          = part3->momentum().Px();
+    py          = part3->momentum().Py();
+    pz          = part3->momentum().Pz();
+    ptransverse = part3->momentum().Pt();
+    eta         = part3->momentum().Eta();
+    pidk        = part3->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
+    pidp        = part3->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
+    nnp         = part3->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
+    nnk         = part3->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
+    nnpi        = part3->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
+    nng = part3->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
     if ( part3->proto()->track()->type() == 1 ) {
       charge = 0;
     } else {
@@ -501,24 +493,29 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     type                   = part3->proto()->track()->type();
     const MuonPID* muonPID = part3->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    const LHCb::MCParticle* mcp( NULL );
-    if ( msgLevel( MSG::VERBOSE ) )
-      verbose() << "Getting related MCP to " << part3 << endmsg;
-    mcp = m_p2mcAssoc->relatedMCP( part3 );
-    if ( msgLevel( MSG::VERBOSE ) ) verbose() << "Got mcp " << mcp << endmsg;
-    trueID = ( mcp ? mcp->particleID().pid() : 0 );
+    // -- Retrieve truth-level information
+    truepid = 0;
+    const LHCb::MCParticle* mcpart3( NULL );
+    for ( std::vector<IParticle2MCAssociator*>::const_iterator iMCAss =
+              m_p2mcAssocs.begin();
+          iMCAss != m_p2mcAssocs.end(); ++iMCAss ) {
+      mcpart3 = ( *iMCAss )->relatedMCP( part3 );
+      if ( mcpart3 ) {
+        truepid = mcpart3->particleID().pid();
+        break;
+      }
+    }
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI23" + m_outputSuffix, mchi23 );
-  tuple->column( prefix + "_ISOLATION_SC3" + m_outputSuffix, _sc3 );
   tuple->column( prefix + "_ISOLATION_BDT3" + m_outputSuffix, bdt3 );
-  tuple->column( prefix + "_ISOLATION_ANGLE3" + m_outputSuffix, angle3 );
   tuple->column( prefix + "_ISOLATION_CHARGE3" + m_outputSuffix, charge );
   tuple->column( prefix + "_ISOLATION_Type3" + m_outputSuffix, type );
   tuple->column( prefix + "_ISOLATION_PE3" + m_outputSuffix, pe );
   tuple->column( prefix + "_ISOLATION_PX3" + m_outputSuffix, px );
   tuple->column( prefix + "_ISOLATION_PY3" + m_outputSuffix, py );
   tuple->column( prefix + "_ISOLATION_PZ3" + m_outputSuffix, pz );
+  tuple->column( prefix + "_ISOLATION_PT3" + m_outputSuffix, ptransverse );
+  tuple->column( prefix + "_ISOLATION_ETA3" + m_outputSuffix, eta );
   tuple->column( prefix + "_ISOLATION_PIDK3" + m_outputSuffix, pidk );
   tuple->column( prefix + "_ISOLATION_PIDp3" + m_outputSuffix, pidp );
   tuple->column( prefix + "_ISOLATION_NNk3" + m_outputSuffix, nnk );
@@ -526,53 +523,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_NNp3" + m_outputSuffix, nnp );
   tuple->column( prefix + "_ISOLATION_IsMuon3" + m_outputSuffix, ismuon );
   tuple->column( prefix + "_ISOLATION_NNghost3" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_TRUEID3" + m_outputSuffix, trueID );
-
-  if ( bdt4 > -1 ) {
-    pe   = part4->momentum().E();
-    px   = part4->momentum().Px();
-    py   = part4->momentum().Py();
-    pz   = part4->momentum().Pz();
-    pidk = part4->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
-    pidp = part4->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
-    nnp  = part4->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
-    nnk  = part4->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
-    nnpi = part4->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
-    nng  = part4->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
-    if ( part4->proto()->track()->type() == 1 ) {
-      charge = 0;
-    } else {
-      charge = part4->proto()->track()->charge();
-    }
-    type                   = part4->proto()->track()->type();
-    const MuonPID* muonPID = part4->proto()->muonPID();
-    ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    const LHCb::MCParticle* mcp( NULL );
-    if ( msgLevel( MSG::VERBOSE ) )
-      verbose() << "Getting related MCP to " << part4 << endmsg;
-    mcp = m_p2mcAssoc->relatedMCP( part4 );
-    if ( msgLevel( MSG::VERBOSE ) ) verbose() << "Got mcp " << mcp << endmsg;
-    trueID = ( mcp ? mcp->particleID().pid() : 0 );
-  }
-
-  tuple->column( prefix + "_ISOLATION_CHI24" + m_outputSuffix, mchi24 );
-  tuple->column( prefix + "_ISOLATION_SC4" + m_outputSuffix, _sc4 );
-  tuple->column( prefix + "_ISOLATION_BDT4" + m_outputSuffix, bdt4 );
-  tuple->column( prefix + "_ISOLATION_ANGLE4" + m_outputSuffix, angle4 );
-  tuple->column( prefix + "_ISOLATION_CHARGE4" + m_outputSuffix, charge );
-  tuple->column( prefix + "_ISOLATION_Type4" + m_outputSuffix, type );
-  tuple->column( prefix + "_ISOLATION_PE4" + m_outputSuffix, pe );
-  tuple->column( prefix + "_ISOLATION_PX4" + m_outputSuffix, px );
-  tuple->column( prefix + "_ISOLATION_PY4" + m_outputSuffix, py );
-  tuple->column( prefix + "_ISOLATION_PZ4" + m_outputSuffix, pz );
-  tuple->column( prefix + "_ISOLATION_PIDK4" + m_outputSuffix, pidk );
-  tuple->column( prefix + "_ISOLATION_PIDp4" + m_outputSuffix, pidp );
-  tuple->column( prefix + "_ISOLATION_NNk4" + m_outputSuffix, nnk );
-  tuple->column( prefix + "_ISOLATION_NNpi4" + m_outputSuffix, nnpi );
-  tuple->column( prefix + "_ISOLATION_NNp4" + m_outputSuffix, nnp );
-  tuple->column( prefix + "_ISOLATION_IsMuon4" + m_outputSuffix, ismuon );
-  tuple->column( prefix + "_ISOLATION_NNghost4" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_TRUEID4" + m_outputSuffix, trueID );
+  tuple->column( prefix + "_ISOLATION_OldFDCHI2" + m_outputSuffix, oldfdchi2 );
+  tuple->column( prefix + "_ISOLATION_TruePID3" + m_outputSuffix, truepid );
 
   return StatusCode( test );
 }
@@ -580,14 +532,14 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
 //=========================================================================
 //
 //=========================================================================
-const Vertex* TupleToolApplyIsolation::originVertex(
+const Vertex* TupleToolApplyIsolationMC::originVertex(
     const Particle* top, const Particle* P ) const {
   if ( top == P || P->isBasicParticle() ) return 0;
 
   const SmartRefVector<LHCb::Particle>& dau = top->daughters();
   if ( dau.empty() ) {
     // if (msgLevel(MSG::DEBUG)) debug() << " Particle has no daughters! "  <<
-    // endmsg;
+    // std::endl;
     return 0;
   }
 
@@ -611,7 +563,7 @@ const Vertex* TupleToolApplyIsolation::originVertex(
 //=============================================================================
 // Check if the track is already in the decay
 //=============================================================================
-bool TupleToolApplyIsolation::isTrackInDecay(
+bool TupleToolApplyIsolationMC::isTrackInDecay(
     const LHCb::Track* track, std::vector<const LHCb::Track*> daughters ) {
   bool isInDecay = false;
   // loop over daughters
@@ -633,7 +585,7 @@ bool TupleToolApplyIsolation::isTrackInDecay(
 //=============================================================================
 // MINIPCHI2 for a track
 //=============================================================================
-double TupleToolApplyIsolation::getminipchi( const LHCb::Particle* track ) {
+double TupleToolApplyIsolationMC::getminipchi( const LHCb::Particle* track ) {
   double                 minchi2 = -1;
   const RecVertex::Range PV      = m_dva->primaryVertices();
   if ( !PV.empty() ) {
@@ -656,8 +608,8 @@ double TupleToolApplyIsolation::getminipchi( const LHCb::Particle* track ) {
   return minchi2;
 }
 
-double TupleToolApplyIsolation::getfdchi2( const LHCb::Track* track,
-                                           LHCb::Vertex       Vtx ) {
+double TupleToolApplyIsolationMC::getfdchi2( const LHCb::Track* track,
+                                             LHCb::Vertex       Vtx ) {
   double                 minchi2 = -1;
   double                 fdchi2  = -1;
   double                 fd;
@@ -681,8 +633,8 @@ double TupleToolApplyIsolation::getfdchi2( const LHCb::Track* track,
 //=============================================================================
 // Opening angle for a track and particle
 //=============================================================================
-double TupleToolApplyIsolation::getopening( const LHCb::Track*    track,
-                                            const LHCb::Particle* P ) {
+double TupleToolApplyIsolationMC::getopening( const LHCb::Track*    track,
+                                              const LHCb::Particle* P ) {
   Gaudi::XYZVector A          = P->momentum().Vect();
   Gaudi::XYZVector B          = track->momentum();
   double           cosopening = A.Dot( B ) / std::sqrt( A.Mag2() * B.Mag2() );

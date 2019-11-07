@@ -2,7 +2,6 @@
 
 // from Gaudi
 
-
 // local
 #include "TupleToolApplyIsolationVetoDst.h"
 
