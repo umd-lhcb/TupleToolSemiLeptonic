@@ -1,8 +1,3 @@
-// Include files
-
-// from Gaudi
-
-// local
 #include "TupleToolApplyIsolation.h"
 
 #include <Kernel/GetIDVAlgorithm.h>

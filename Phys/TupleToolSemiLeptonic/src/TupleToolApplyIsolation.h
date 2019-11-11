@@ -1,16 +1,11 @@
 #ifndef TupleToolApplyIsolation_H
 #define TupleToolApplyIsolation_H 1
 
-// Include files
-// from Gaudi
 #include "DecayTreeTupleBase/TupleToolBase.h"
 #include "Kernel/IParticle2MCAssociator.h"
 #include "Kernel/IParticleTupleTool.h"  // Interface
 #include "Kernel/Particle2MCLinker.h"
 #include "TrackInterfaces/ITrackVertexer.h"
-//#include "LoKi/DistanceCalculator.h"
-//#include "LoKi/DistanceCalculatorBase.h"
-//#include "ChargedParticleMakerBase.h"
 
 #include "TMVA/Reader.h"
 #include "TString.h"
@@ -23,7 +18,7 @@ class IPVReFitter;
 namespace LHCb {
 class Particle;
 class Vertex;
-};  // namespace LHCb
+} // namespace LHCb
 
 /** @class TupleToolVtxIsoln TupleToolVtxIsoln.h
  *
@@ -54,13 +49,13 @@ class TupleToolApplyIsolation : public TupleToolBase,
 
   virtual StatusCode initialize();
 
-  StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
+  virtual StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
                    const std::string&, Tuples::Tuple& );
 
  protected:
  private:
-  Float_t opening, minipchi2, newfdchi2, oldfdchi2, ghostprob, trackchi2,
-      deltafd, pt, ip, chi2, type, vertexchi2, Dst_PT, dummy;
+  Float_t opening{}, minipchi2{}, newfdchi2{}, oldfdchi2{}, ghostprob{}, trackchi2{},
+      deltafd{}, pt{}, ip{}, chi2{}, type{}, vertexchi2{}, Dst_PT{}, dummy{};
 
   bool   isTrackInDecay( const LHCb::Track*, std::vector<const LHCb::Track*> );
   double getminipchi( const LHCb::Particle* );
@@ -72,9 +67,9 @@ class TupleToolApplyIsolation : public TupleToolBase,
 
   IDistanceCalculator*     m_dist;
   const IVertexFit*        m_pVertexFit;
-  IParticle2MCAssociator*  m_p2mcAssoc;
-  IPVReFitter*             m_pvReFitter;
-  TMVA::Reader*            m_Reader;
+  IParticle2MCAssociator*  m_p2mcAssoc{};
+  IPVReFitter*             m_pvReFitter{};
+  TMVA::Reader*            m_Reader{};
   double                   m_deltaChi2;
   double                   m_Chi2;
   std::string              m_typeVertexFit;
