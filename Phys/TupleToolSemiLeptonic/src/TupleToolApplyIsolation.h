@@ -20,9 +20,10 @@ class Particle;
 class Vertex;
 } // namespace LHCb
 
-/** @class TupleToolVtxIsoln TupleToolVtxIsoln.h
+/**
  *
- * \brief Fill isolation information for DecayTreeTuple
+ * @class TupleToolApplyIsolation TupleToolApplyIsolation.h
+ * @brief Fill isolation information for DecayTreeTuple
  *
  * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to
  * vertex give delta chi2 < specified window
@@ -31,13 +32,11 @@ class Vertex;
  * combination with any of the input Particles head_SMALLESTDELTACHI2: delta
  * chi2 of smallest delta chi2 combination with any of the input Particles
  *
- * \sa DecayTreeTuple
- *
  *  @todo Maybe one should get Tracks instead of Particles?
  *
- *  @author Mitesh Patel, Patrick Koppenburg
- *  @date   2008-04-15
- */
+ *  @date   2019-11-11
+ *
+ **/
 class TupleToolApplyIsolation : public TupleToolBase,
                                 virtual public IParticleTupleTool {
  public:
@@ -45,12 +44,12 @@ class TupleToolApplyIsolation : public TupleToolBase,
   TupleToolApplyIsolation( const std::string& type, const std::string& name,
                            const IInterface* parent );
 
-  virtual ~TupleToolApplyIsolation(){};  ///< Destructor
+  ~TupleToolApplyIsolation() override = default;
 
-  virtual StatusCode initialize();
+  StatusCode initialize() override;
 
-  virtual StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
-                   const std::string&, Tuples::Tuple& );
+  StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
+                   const std::string&, Tuples::Tuple& ) override;
 
  protected:
  private:
@@ -63,8 +62,8 @@ class TupleToolApplyIsolation : public TupleToolBase,
   double getopening( const LHCb::Track*, const LHCb::Particle* );
   const LHCb::Vertex* originVertex( const LHCb::Particle*,
                                     const LHCb::Particle* ) const;
-  IDVAlgorithm*       m_dva;
 
+  IDVAlgorithm*       m_dva;
   IDistanceCalculator*     m_dist;
   const IVertexFit*        m_pVertexFit;
   IParticle2MCAssociator*  m_p2mcAssoc{};
@@ -77,4 +76,5 @@ class TupleToolApplyIsolation : public TupleToolBase,
   std::string              m_weightsName;
   std::vector<std::string> m_inputParticles;
 };
+
 #endif  // TupleToolApplyIsolation_H
