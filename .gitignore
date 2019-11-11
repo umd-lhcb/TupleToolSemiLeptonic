@@ -1,2 +1,5 @@
 .lvimrc
 build*
+.gaudi_project_ignore
+Phys/TupleToolSemiLeptonic/TupleToolSemiLeptonicVersion.h
+config
