@@ -63,15 +63,16 @@ StatusCode TupleToolApplyIsolation::initialize() {
   m_dva = Gaudi::Utils::getIDVAlgorithm( contextSvc() );
   if ( m_dva == nullptr )
     return Error( "Couldn't get parent DVAlgorithm", StatusCode::FAILURE );
+
   m_dist      = tool<IDistanceCalculator>( "LoKi::DistanceCalculator", this );
   m_p2mcAssoc = tool<IParticle2MCAssociator>( "DaVinciSmartAssociator", this );
   if ( !m_dist ) {
     Error( "Unable to retrieve the IDistanceCalculator tool" );
     return StatusCode::FAILURE;
   }
+
   m_pvReFitter = tool<IPVReFitter>( "AdaptivePVReFitter", this );
   m_pVertexFit = tool<IVertexFit>( "LoKi::VertexFitter", this );
-
   if ( !m_pVertexFit ) {
     Error( "Unable to retrieve the IVertexFit tool" );
     return StatusCode::FAILURE;

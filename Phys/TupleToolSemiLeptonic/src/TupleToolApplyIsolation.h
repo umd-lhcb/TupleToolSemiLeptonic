@@ -18,11 +18,11 @@ class IPVReFitter;
 namespace LHCb {
 class Particle;
 class Vertex;
-} // namespace LHCb
+}  // namespace LHCb
 
 /**
  *
- * @class TupleToolApplyIsolation TupleToolApplyIsolation.h
+ * @class TupleToolApplyIsolation.cpp TupleToolApplyIsolation.h
  * @brief Fill isolation information for DecayTreeTuple
  *
  * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to
@@ -53,8 +53,9 @@ class TupleToolApplyIsolation : public TupleToolBase,
 
  protected:
  private:
-  Float_t opening{}, minipchi2{}, newfdchi2{}, oldfdchi2{}, ghostprob{}, trackchi2{},
-      deltafd{}, pt{}, ip{}, chi2{}, type{}, vertexchi2{}, Dst_PT{}, dummy{};
+  Float_t opening{}, minipchi2{}, newfdchi2{}, oldfdchi2{}, ghostprob{},
+      trackchi2{}, deltafd{}, pt{}, ip{}, chi2{}, type{}, vertexchi2{},
+      Dst_PT{}, dummy{};
 
   bool   isTrackInDecay( const LHCb::Track*, std::vector<const LHCb::Track*> );
   double getminipchi( const LHCb::Particle* );
@@ -63,7 +64,7 @@ class TupleToolApplyIsolation : public TupleToolBase,
   const LHCb::Vertex* originVertex( const LHCb::Particle*,
                                     const LHCb::Particle* ) const;
 
-  IDVAlgorithm*       m_dva;
+  IDVAlgorithm*            m_dva;
   IDistanceCalculator*     m_dist;
   const IVertexFit*        m_pVertexFit;
   IParticle2MCAssociator*  m_p2mcAssoc{};
