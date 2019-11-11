@@ -1,48 +1,36 @@
+// local
 #include "TupleToolApplyIsolation.h"
 
-#include <Kernel/GetIDVAlgorithm.h>
-#include <Kernel/IDVAlgorithm.h>
-#include <Kernel/IDistanceCalculator.h>
-#include <Kernel/IVertexFit.h>
-
+// from Gaudi
 #include "GaudiAlg/Tuple.h"
-#include "GaudiAlg/TupleObj.h"
 
+// from Phys
+#include "Kernel/GetIDVAlgorithm.h"
+#include "Kernel/IDVAlgorithm.h"
+#include "Kernel/IDistanceCalculator.h"
+#include "Kernel/IVertexFit.h"
+
+// from LHCb
 #include "Event/MCParticle.h"
 #include "Event/Particle.h"
-#include "GaudiKernel/DeclareFactoryEntries.h"
 #include "Kernel/IPVReFitter.h"
 #include "Linker/LinkerTable.h"
 #include "TrackInterfaces/ITrackVertexer.h"
 
-#include <functional>
-#include <map>
-#include <string>
-
+// from ROOT
 #include "TFile.h"
 #include "TPluginManager.h"
-#include "TROOT.h"
 #include "TStopwatch.h"
 #include "TString.h"
 #include "TSystem.h"
-#include "TTree.h"
 
-//#include "TMVA/Reader.h"
-//#include "TMVA/Config.h"
-//#include "TMVA/Tools.h"
+#include <functional>
+#include <string>
 
-//-----------------------------------------------------------------------------
-// Implementation file for class : TupleToolVtxIsoln
-//
-// @author Mitesh Patel, Patrick Koppenburg
-// @date   2008-04-15
-//-----------------------------------------------------------------------------
-
-// Declaration of the Tool Factory
-// actually acts as a using namespace TupleTool
-DECLARE_TOOL_FACTORY( TupleToolApplyIsolation );
+DECLARE_COMPONENT( TupleToolApplyIsolation );
 
 using namespace LHCb;
+
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
@@ -55,9 +43,9 @@ TupleToolApplyIsolation::TupleToolApplyIsolation( const std::string& type,
       m_pVertexFit( 0 ) {
   declareInterface<IParticleTupleTool>( this );
 
-  m_inputParticles.push_back( "/Event/Phys/StdAllNoPIDsPions" );
-  m_inputParticles.push_back( "/Event/Phys/StdNoPIDsUpPions" );
-  m_inputParticles.push_back( "Phys/StdNoPIDsVeloPions" );
+  m_inputParticles.emplace_back( "/Event/Phys/StdAllNoPIDsPions" );
+  m_inputParticles.emplace_back( "/Event/Phys/StdNoPIDsUpPions" );
+  m_inputParticles.emplace_back( "Phys/StdNoPIDsVeloPions" );
   // m_inputParticles.push_back("/Event/Phys/StdNoPIDsVeloElectrons");
 
   // havent removed / added any of this yet
@@ -65,7 +53,6 @@ TupleToolApplyIsolation::TupleToolApplyIsolation( const std::string& type,
   declareProperty( "MaxChi2", m_Chi2 = 9.0 );
   declareProperty( "VertexFit", m_typeVertexFit = "default" );
   declareProperty( "InputParticles", m_inputParticles );
-  ;
   declareProperty( "OutputSuffix", m_outputSuffix = "" );
   declareProperty( "WeightsFile", m_weightsName = "weights.xml" );
 }
