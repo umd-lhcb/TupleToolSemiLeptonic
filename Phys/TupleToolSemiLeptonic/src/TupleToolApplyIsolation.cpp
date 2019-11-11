@@ -27,7 +27,7 @@
 #include <functional>
 #include <string>
 
-DECLARE_COMPONENT( TupleToolApplyIsolation );
+DECLARE_COMPONENT( TupleToolApplyIsolation )
 
 using namespace LHCb;
 
@@ -47,7 +47,7 @@ TupleToolApplyIsolation::TupleToolApplyIsolation( const std::string& type,
   m_inputParticles.emplace_back( "/Event/Phys/StdNoPIDsUpPions" );
   m_inputParticles.emplace_back( "Phys/StdNoPIDsVeloPions" );
 
-  // havent removed / added any of this yet
+  // have not removed / added any of this yet
   declareProperty( "MaxDeltaChi2", m_deltaChi2 = 9.0 );
   declareProperty( "MaxChi2", m_Chi2 = 9.0 );
   declareProperty( "VertexFit", m_typeVertexFit = "default" );
@@ -57,7 +57,6 @@ TupleToolApplyIsolation::TupleToolApplyIsolation( const std::string& type,
 }
 
 //=============================================================================
-
 StatusCode TupleToolApplyIsolation::initialize() {
   if ( !TupleToolBase::initialize() ) return StatusCode::FAILURE;
 
@@ -227,13 +226,13 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
           continue;
         }
         opening = getopening( part->proto()->track(), P );
-        if ( part->proto()->track()->type() == 3 && !( opening > 0.994 ) ) {
+        if ( part->proto()->track()->type() == 3 && opening <= 0.994 ) {
           continue;
         }
-        if ( part->proto()->track()->type() == 4 && !( opening > 0.98 ) ) {
+        if ( part->proto()->track()->type() == 4 && opening <= 0.98 ) {
           continue;
         }
-        if ( part->proto()->track()->type() == 1 && !( opening > 0.98 ) ) {
+        if ( part->proto()->track()->type() == 1 && opening <= 0.98 ) {
           continue;
         }
         LHCb::Vertex vtxWithExtraTrack;
@@ -516,7 +515,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
 //=========================================================================
 const Vertex* TupleToolApplyIsolation::originVertex(
     const Particle* top, const Particle* P ) const {
-  if ( top == P || P->isBasicParticle() ) return 0;
+  if ( top == P || P->isBasicParticle() ) return nullptr;
 
   const SmartRefVector<LHCb::Particle>& dau = top->daughters();
   if ( dau.empty() ) {
@@ -537,7 +536,7 @@ const Vertex* TupleToolApplyIsolation::originVertex(
       if ( vv ) return vv;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 //=============================================================================
@@ -547,6 +546,7 @@ bool TupleToolApplyIsolation::isTrackInDecay(
     const LHCb::Track*                    track,
     const std::vector<const LHCb::Track*> daughters ) {
   bool isInDecay = false;
+
   // loop over daughters
   for ( auto itrack : daughters ) {
     if ( itrack ) {
@@ -556,7 +556,7 @@ bool TupleToolApplyIsolation::isTrackInDecay(
         isInDecay = true;
       }
     }
-  }  // end daughter loop
+  }
 
   return isInDecay;
 }
@@ -567,6 +567,7 @@ bool TupleToolApplyIsolation::isTrackInDecay(
 double TupleToolApplyIsolation::getminipchi( const LHCb::Particle* track ) {
   double                 minchi2 = -1;
   const RecVertex::Range PV      = m_dva->primaryVertices();
+
   if ( !PV.empty() ) {
     for ( auto pv : PV ) {
       double     ip, chi2;
@@ -592,6 +593,7 @@ double TupleToolApplyIsolation::getfdchi2( const LHCb::Track* track,
   double                 fdchi2  = -1;
   double                 fd;
   const RecVertex::Range PV = m_dva->primaryVertices();
+
   if ( !PV.empty() ) {
     for ( auto pv : PV ) {
       double     ip = 0, chi2;
