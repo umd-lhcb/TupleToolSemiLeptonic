@@ -1,54 +1,36 @@
-// Include files
-
-// from Gaudi
-#include "GaudiKernel/ToolFactory.h"
-
 // local
 #include "TupleToolApplyIsolationMC.h"
 
-#include <Kernel/GetIDVAlgorithm.h>
-#include <Kernel/IDVAlgorithm.h>
-#include <Kernel/IDistanceCalculator.h>
-#include <Kernel/IVertexFit.h>
+// from Phys
+#include "Kernel/GetIDVAlgorithm.h"
+#include "Kernel/IDVAlgorithm.h"
+#include "Kernel/IDistanceCalculator.h"
+#include "Kernel/IVertexFit.h"
 
+// from Gaudi
 #include "GaudiAlg/Tuple.h"
-#include "GaudiAlg/TupleObj.h"
 
-#include <functional>
+// from LHCb
 #include "Event/MCParticle.h"
 #include "Event/Particle.h"
-#include "GaudiKernel/DeclareFactoryEntries.h"
 #include "Kernel/IPVReFitter.h"
 #include "Linker/LinkerTable.h"
 #include "TrackInterfaces/ITrackVertexer.h"
 
-#include <map>
-#include <string>
-
+// from ROOT
 #include "TFile.h"
 #include "TPluginManager.h"
-#include "TROOT.h"
 #include "TStopwatch.h"
 #include "TString.h"
 #include "TSystem.h"
-#include "TTree.h"
 
-//#include "TMVA/Reader.h"
-//#include "TMVA/Config.h"
-//#include "TMVA/Tools.h"
+#include <functional>
+#include <string>
 
-//-----------------------------------------------------------------------------
-// Implementation file for class : TupleToolVtxIsoln
-//
-// @author Mitesh Patel, Patrick Koppenburg
-// @date   2008-04-15
-//-----------------------------------------------------------------------------
-
-// Declaration of the Tool Factory
-// actually acts as a using namespace TupleTool
-DECLARE_TOOL_FACTORY( TupleToolApplyIsolationMC );
+DECLARE_COMPONENT( TupleToolApplyIsolationMC )
 
 using namespace LHCb;
+
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
@@ -61,44 +43,40 @@ TupleToolApplyIsolationMC::TupleToolApplyIsolationMC(
       m_pVertexFit( 0 ) {
   declareInterface<IParticleTupleTool>( this );
 
-  m_inputParticles.push_back( "/Event/Phys/StdAllNoPIDsPions" );
-  m_inputParticles.push_back( "/Event/Phys/StdNoPIDsUpPions" );
-  m_inputParticles.push_back( "Phys/StdNoPIDsVeloPions" );
-  // m_inputParticles.push_back("/Event/Phys/StdNoPIDsVeloElectrons");
+  m_inputParticles.emplace_back( "/Event/Phys/StdAllNoPIDsPions" );
+  m_inputParticles.emplace_back( "/Event/Phys/StdNoPIDsUpPions" );
+  m_inputParticles.emplace_back( "Phys/StdNoPIDsVeloPions" );
 
-  // havent removed / added any of this yet
+  m_p2mcAssocTypes.emplace_back( "DaVinciSmartAssociator" );
+  m_p2mcAssocTypes.emplace_back( "MCMatchObjP2MCRelator" );
+
+  // have not removed / added any of this yet
   declareProperty( "MaxDeltaChi2", m_deltaChi2 = 9.0 );
   declareProperty( "MaxChi2", m_Chi2 = 9.0 );
   declareProperty( "VertexFit", m_typeVertexFit = "default" );
   declareProperty( "InputParticles", m_inputParticles );
-  ;
   declareProperty( "OutputSuffix", m_outputSuffix = "" );
   declareProperty( "WeightsFile", m_weightsName = "weights.xml" );
-
-  m_p2mcAssocTypes.push_back( "DaVinciSmartAssociator" );
-  m_p2mcAssocTypes.push_back( "MCMatchObjP2MCRelator" );
   declareProperty( "IP2MCPAssociatorTypes", m_p2mcAssocTypes );
 }
 
 //=============================================================================
-
 StatusCode TupleToolApplyIsolationMC::initialize() {
   if ( !TupleToolBase::initialize() ) return StatusCode::FAILURE;
 
   m_dva = Gaudi::Utils::getIDVAlgorithm( contextSvc() );
-  if ( 0 == m_dva )
+  if ( m_dva == nullptr )
     return Error( "Couldn't get parent DVAlgorithm", StatusCode::FAILURE );
+
   m_dist      = tool<IDistanceCalculator>( "LoKi::DistanceCalculator", this );
   m_p2mcAssoc = tool<IParticle2MCAssociator>( "DaVinciSmartAssociator", this );
   if ( !m_dist ) {
     Error( "Unable to retrieve the IDistanceCalculator tool" );
     return StatusCode::FAILURE;
   }
+
   m_pvReFitter = tool<IPVReFitter>( "AdaptivePVReFitter", this );
-  // m_pVertexFit= m_dva->vertexFitter();
-
   m_pVertexFit = tool<IVertexFit>( "LoKi::VertexFitter", this );
-
   if ( !m_pVertexFit ) {
     Error( "Unable to retrieve the IVertexFit tool" );
     return StatusCode::FAILURE;
@@ -121,30 +99,26 @@ StatusCode TupleToolApplyIsolationMC::initialize() {
   // m_Reader->AddVariable( "log(1-D_DIRA_OWNPV)",&dummy);
   // m_Reader->AddVariable( "log(1-Bplus_DIRA_OWNPV)",&dummy);
 
-  // reader->AddVariable("Bplus_PT",&Bplus_PTf);
-  // reader->AddVariable("Dst_PT",&Dst_PTf);
   m_Reader->BookMVA( "BDT method", m_weightsName );
-
   if ( !m_Reader ) {
     Error( "Unable to retrieve the IVertexFit tool" );
     return StatusCode::FAILURE;
   }
 
   m_p2mcAssocs.clear();
-  for ( std::vector<std::string>::const_iterator iMCAss =
-            m_p2mcAssocTypes.begin();
-        iMCAss != m_p2mcAssocTypes.end(); ++iMCAss ) {
-    m_p2mcAssocs.push_back( tool<IParticle2MCAssociator>( *iMCAss, this ) );
+  for ( auto& m_p2mcAssocType : m_p2mcAssocTypes ) {
+    m_p2mcAssocs.push_back(
+        tool<IParticle2MCAssociator>( m_p2mcAssocType, this ) );
   }
   if ( m_p2mcAssocs.empty() ) {
-    return Error( "No MC associators configured" );
+    Error( "No MC associators configured" );
+    return StatusCode::FAILURE;
   }
 
   return StatusCode::SUCCESS;
 }
 
 //=============================================================================
-
 StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
                                             const Particle*    P,
                                             const std::string& head,
@@ -171,38 +145,26 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
   float ismuon      = 0;
   int   truepid     = 0;
 
-  /*
-  const LHCb::Vertex* vtx;
-  if (P->isBasicParticle()){
-    vtx = mother->endVertex();
-  }
-  else{
-    vtx = P->endVertex();
-
-  }
-  debug()<<"vertex for P, ID " <<P->particleID().pid()<<" = " <<vtx<<" at
-  "<<vtx->position()<<  endmsg; if( !vtx ){ Error("Can't retrieve the  vertex
-  for " + prefix ); return StatusCode::FAILURE;
-  }
-  */
   std::vector<const LHCb::Track*> daughtertracks;
   daughtertracks.clear();
+
   LHCb::Particle::ConstVector source;
   LHCb::Particle::ConstVector target;
   LHCb::Particle::ConstVector finalStates;
   LHCb::Particle::ConstVector parts2Vertex;
   LHCb::Particle::ConstVector parts2VertexD;
+
   double                      maxbdt = -2;
   double                      bdt2   = -2;
   double                      bdt3   = -2;
   const LHCb::Particle*       maxpart;
   const LHCb::Particle*       part2;
   const LHCb::Particle*       part3;
+
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
   parts2VertexD.clear();
 
-  //   const LHCb::Particle* prefix = P;
   if ( P->isBasicParticle() ) {
     source.push_back( mother );
   } else {
@@ -212,10 +174,9 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
 
   do {
     target.clear();
-    for ( LHCb::Particle::ConstVector::const_iterator isource = source.begin();
-          isource != source.end(); isource++ ) {
-      if ( !( ( *isource )->daughters().empty() ) ) {
-        LHCb::Particle::ConstVector tmp = ( *isource )->daughtersVector();
+    for ( auto& isource : source ) {
+      if ( !( isource->daughters().empty() ) ) {
+        LHCb::Particle::ConstVector tmp = isource->daughtersVector();
 
         for ( LHCb::Particle::ConstVector::const_iterator itmp = tmp.begin();
               itmp != tmp.end(); itmp++ ) {
@@ -232,17 +193,11 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
       }  // if endVertex
     }    // isource
     source = target;
-  } while ( target.size() > 0 );
+  } while ( !target.empty() );
   if ( msgLevel( MSG::DEBUG ) )
     debug() << "Final states size= " << finalStates.size() << std::endl;
-  // warning() << " D VERTEX CHI2 " << dv2.chi2() << " NDOF " << dv2.nDoF() <<
-  // std::endl; warning() << "DAUGHTER SIZE " << daughtertracks.size() <<
-  // std::endl; default gives best tracks (why would you default to anything
-  // less than the best?)
 
   LHCb::Vertex v;
-  // double chi2ndof = 0;//oldvtx->chi2();
-  // int ndof = 0;//oldvtx->nDoF();
 
   if ( P->isBasicParticle() ) {
     parts2Vertex.push_back( P );
@@ -251,99 +206,71 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     StatusCode sc = m_pVertexFit->fit( v, parts2Vertex );
   }
 
-  // hack due to lack of programming skill
-  // v=new LHCb::Vertex(v2);
-  //********Loop through tracks************
-
   // number below am IPCHI2 threshold isnt that useful, will probably remove it
-
   LHCb::Particle::ConstVector theParts;
 
-  for ( std::vector<std::string>::iterator i = m_inputParticles.begin();
-        i != m_inputParticles.end(); ++i ) {
-    if ( !exist<LHCb::Particle::Range>( *i + "/Particles" ) ) {
+  for ( auto& m_inputParticle : m_inputParticles ) {
+    if ( !exist<LHCb::Particle::Range>( m_inputParticle + "/Particles" ) ) {
       if ( msgLevel( MSG::DEBUG ) )
-        debug() << "No particles at " << *i << " !!!!!" << std::endl;
+        debug() << "No particles at " << m_inputParticle << " !!!!!"
+                << std::endl;
       continue;
     }
 
     LHCb::Particle::Range parts =
-        get<LHCb::Particle::Range>( *i + "/Particles" );
+        get<LHCb::Particle::Range>( m_inputParticle + "/Particles" );
     if ( msgLevel( MSG::DEBUG ) )
-      debug() << "Getting particles from " << *i << " with "
+      debug() << "Getting particles from " << m_inputParticle << " with "
               << ( parts ).size() << " particles" << std::endl;
-    // warning() << "Getting particles from " << *i
-    //                                  << " with " << (parts).size() << "
-    //                                  particles" << std::endl;
-    for ( LHCb::Particle::Range::const_iterator iparts = ( parts ).begin();
-          iparts != ( parts ).end(); ++iparts ) {
-      const LHCb::Particle* part = ( *iparts );
+    for ( auto iparts : ( parts ) ) {
+      const LHCb::Particle* part = iparts;
 
-      // if(isTrackInDecay(part->proto()->track(),daughtertracks)) warning() <<
-      // "FOUND DAUGHTER TRACK" << std::endl;
       if ( part->proto()->track()->type() < 5 &&
            !isTrackInDecay( part->proto()->track(), daughtertracks ) ) {
+        ghostprob = part->proto()->track()->ghostProbability();
+        if ( ghostprob > 0.5 ) {
+          continue;
+        }
+        if ( part->proto()->track()->type() == 3 && opening <= 0.994 ) {
+          continue;
+        }
+        if ( part->proto()->track()->type() == 4 && opening <= 0.98 ) {
+          continue;
+        }
+        if ( part->proto()->track()->type() == 1 && opening <= 0.98 ) {
+          continue;
+        }
         LHCb::Vertex vtxWithExtraTrack;
-        parts2Vertex.push_back( *iparts );
+        parts2Vertex.push_back( iparts );
         StatusCode sc3 = m_pVertexFit->fit( vtxWithExtraTrack, parts2Vertex );
+
         parts2Vertex.pop_back();
         opening   = getopening( part->proto()->track(), P );
         minipchi2 = getminipchi( part );
         newfdchi2 =
             fabs( getfdchi2( part->proto()->track(), vtxWithExtraTrack ) );
         oldfdchi2 = fabs( getfdchi2( part->proto()->track(), v ) );
-        ghostprob = part->proto()->track()->ghostProbability();
         trackchi2 = part->proto()->track()->chi2PerDoF();
         deltafd   = log10( fabs( newfdchi2 - oldfdchi2 ) ) - 7;
         type      = part->proto()->track()->type();
+
         if ( newfdchi2 - oldfdchi2 < 0 ) deltafd = deltafd * -1.;
-        // warning() << "Flight " << newfdchi2 << " DELTAFD " << deltafd << "
-        // MINIPCHI2 " << minipchi2 << " Pt " << pt << std::endl;
         newfdchi2 = log10( newfdchi2 );
         if ( part->proto()->track()->type() == 1 )
           pt = part->proto()->track()->momentum().z();
         else
           pt = part->proto()->track()->pt();
 
-        if ( ghostprob > 0.5 ) {
-          continue;
-        }
-
-        // warning() << "type " << type << " opening " << opening << " chi2 "
-        // << chi2 << std::endl;
-
-        if ( part->proto()->track()->type() == 3 && !( opening > 0.994 ) ) {
-          continue;
-        }
-        if ( part->proto()->track()->type() == 4 && !( opening > 0.98 ) ) {
-          continue;
-        }
-        if ( part->proto()->track()->type() == 1 && !( opening > 0.98 ) ) {
-          continue;
-        }
-        // if(track->info(LHCb::Track::CloneDist, -1.) > 0){continue;}
         StatusCode sc = StatusCode::SUCCESS;
         double     tmpip, tmpchi2;
         StatusCode dump =
             m_dist->distance( (const LHCb::Particle*)part,
                               (const LHCb::Vertex*)&v, tmpip, tmpchi2 );
+
         chi2 = tmpchi2;
-        // StatusCode dump2 = m_dist->distance((const LHCb::Particle *)
-        // part,(const LHCb::Vertex *)vd,D_ip,D_chi2);
-        /*
-            if(newfdchi2 != newfdchi2){
-	        warning() << "NEGATIVE
-           FDCHI2 " << " vertex chi2 " << chi2 << std::endl;
- warning() <<
-           "NEW VERTEX " << vtxWithExtraTrack.position().z() << " OLD VERTEX "
-           << v.position().z() << std::endl;
-	        }
-	        */
         if ( chi2 < 50 ) {
           dummy        = 4000;
           float bdtval = m_Reader->EvaluateMVA( "BDT method" );
-          // warning() << "bdtval " << bdtval << " old maxbdt " << maxbdt <<
-          // std::endl;
           if ( bdtval > maxbdt ) {
             bdt3    = bdt2;
             bdt2    = maxbdt;
@@ -360,7 +287,6 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
             bdt3  = bdtval;
             part3 = part;
           }
-          // warning() << "new max bdtval " << maxbdt << std::endl;
         }
       }
     }  // end particles loop
@@ -387,13 +313,11 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     type                   = maxpart->proto()->track()->type();
     const MuonPID* muonPID = maxpart->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    // -- Retrieve truth-level information
     truepid = 0;
-    const LHCb::MCParticle* mcmaxpart( NULL );
-    for ( std::vector<IParticle2MCAssociator*>::const_iterator iMCAss =
-              m_p2mcAssocs.begin();
-          iMCAss != m_p2mcAssocs.end(); ++iMCAss ) {
-      mcmaxpart = ( *iMCAss )->relatedMCP( maxpart );
+
+    const LHCb::MCParticle* mcmaxpart( nullptr );
+    for ( auto& m_p2mcAssoc : m_p2mcAssocs ) {
+      mcmaxpart = m_p2mcAssoc->relatedMCP( maxpart );
       if ( mcmaxpart ) {
         truepid = mcmaxpart->particleID().pid();
         break;
@@ -440,13 +364,11 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     type                   = part2->proto()->track()->type();
     const MuonPID* muonPID = part2->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    // -- Retrieve truth-level information
     truepid = 0;
-    const LHCb::MCParticle* mcpart2( NULL );
-    for ( std::vector<IParticle2MCAssociator*>::const_iterator iMCAss =
-              m_p2mcAssocs.begin();
-          iMCAss != m_p2mcAssocs.end(); ++iMCAss ) {
-      mcpart2 = ( *iMCAss )->relatedMCP( part2 );
+
+    const LHCb::MCParticle* mcpart2( nullptr );
+    for ( auto& m_p2mcAssoc : m_p2mcAssocs ) {
+      mcpart2 = m_p2mcAssoc->relatedMCP( part2 );
       if ( mcpart2 ) {
         truepid = mcpart2->particleID().pid();
         break;
@@ -493,13 +415,11 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     type                   = part3->proto()->track()->type();
     const MuonPID* muonPID = part3->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    // -- Retrieve truth-level information
     truepid = 0;
-    const LHCb::MCParticle* mcpart3( NULL );
-    for ( std::vector<IParticle2MCAssociator*>::const_iterator iMCAss =
-              m_p2mcAssocs.begin();
-          iMCAss != m_p2mcAssocs.end(); ++iMCAss ) {
-      mcpart3 = ( *iMCAss )->relatedMCP( part3 );
+
+    const LHCb::MCParticle* mcpart3( nullptr );
+    for ( auto& m_p2mcAssoc : m_p2mcAssocs ) {
+      mcpart3 = m_p2mcAssoc->relatedMCP( part3 );
       if ( mcpart3 ) {
         truepid = mcpart3->particleID().pid();
         break;
@@ -530,24 +450,16 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
 }
 
 //=========================================================================
-//
-//=========================================================================
 const Vertex* TupleToolApplyIsolationMC::originVertex(
     const Particle* top, const Particle* P ) const {
-  if ( top == P || P->isBasicParticle() ) return 0;
+  if ( top == P || P->isBasicParticle() ) return nullptr;
 
   const SmartRefVector<LHCb::Particle>& dau = top->daughters();
-  if ( dau.empty() ) {
-    // if (msgLevel(MSG::DEBUG)) debug() << " Particle has no daughters! "  <<
-    // std::endl;
-    return 0;
-  }
+  if ( dau.empty() ) return nullptr;
 
   SmartRefVector<LHCb::Particle>::const_iterator it;
   for ( it = dau.begin(); dau.end() != it; ++it ) {
-    if ( P == *it ) {  // I found the daughter
-      return top->endVertex();
-    }
+    if ( P == *it ) return top->endVertex();  // I found the daughter
   }
 
   // vertex not yet found, get deeper in the decay:
@@ -557,19 +469,19 @@ const Vertex* TupleToolApplyIsolationMC::originVertex(
       if ( vv ) return vv;
     }
   }
-  return 0;
+
+  return nullptr;
 }
 
 //=============================================================================
 // Check if the track is already in the decay
 //=============================================================================
 bool TupleToolApplyIsolationMC::isTrackInDecay(
-    const LHCb::Track* track, std::vector<const LHCb::Track*> daughters ) {
+    const LHCb::Track*                    track,
+    const std::vector<const LHCb::Track*> daughters ) {
   bool isInDecay = false;
   // loop over daughters
-  for ( std::vector<const LHCb::Track*>::iterator it = daughters.begin();
-        it != daughters.end(); ++it ) {
-    const LHCb::Track* itrack = ( *it );
+  for ( auto itrack : daughters ) {
     if ( itrack ) {
       if ( itrack == track ) {
         if ( msgLevel( MSG::DEBUG ) )
@@ -588,14 +500,14 @@ bool TupleToolApplyIsolationMC::isTrackInDecay(
 double TupleToolApplyIsolationMC::getminipchi( const LHCb::Particle* track ) {
   double                 minchi2 = -1;
   const RecVertex::Range PV      = m_dva->primaryVertices();
+
   if ( !PV.empty() ) {
-    for ( RecVertex::Range::const_iterator pv = PV.begin(); pv != PV.end();
-          ++pv ) {
+    for ( auto pv : PV ) {
       double     ip, chi2;
       StatusCode test2 =
-          m_dist->distance( (const LHCb::Particle*)track, *pv, ip, chi2 );
+          m_dist->distance( (const LHCb::Particle*)track, pv, ip, chi2 );
       if ( ( chi2 < minchi2 ) || ( minchi2 < 0. ) ) {
-        LHCb::RecVertex  newPV( **pv );
+        LHCb::RecVertex  newPV( *pv );
         StatusCode       scfit    = m_pvReFitter->remove( track, &newPV );
         LHCb::RecVertex* newPVPtr = (LHCb::RecVertex*)&newPV;
         test2                     = m_dist->distance( (LHCb::Particle*)track,
@@ -614,15 +526,15 @@ double TupleToolApplyIsolationMC::getfdchi2( const LHCb::Track* track,
   double                 fdchi2  = -1;
   double                 fd;
   const RecVertex::Range PV = m_dva->primaryVertices();
+
   if ( !PV.empty() ) {
-    for ( RecVertex::Range::const_iterator pv = PV.begin(); pv != PV.end();
-          ++pv ) {
+    for ( auto pv : PV ) {
       double     ip, chi2;
       StatusCode test2 =
-          m_dist->distance( (const LHCb::Track*)track, *pv, ip, chi2 );
+          m_dist->distance( (const LHCb::Track*)track, pv, ip, chi2 );
       if ( ( chi2 < minchi2 ) || ( minchi2 < 0. ) ) {
         minchi2          = chi2;
-        StatusCode test2 = m_dist->distance( *pv, &Vtx, fd, fdchi2 );
+        StatusCode test2 = m_dist->distance( pv, &Vtx, fd, fdchi2 );
       }
     }
   }

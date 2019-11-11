@@ -1,16 +1,11 @@
 #ifndef TupleToolApplyIsolationMC_H
 #define TupleToolApplyIsolationMC_H 1
 
-// Include files
-// from Gaudi
 #include "DecayTreeTupleBase/TupleToolBase.h"
 #include "Kernel/IParticle2MCAssociator.h"
 #include "Kernel/IParticleTupleTool.h"  // Interface
 #include "Kernel/Particle2MCLinker.h"
 #include "TrackInterfaces/ITrackVertexer.h"
-//#include "LoKi/DistanceCalculator.h"
-//#include "LoKi/DistanceCalculatorBase.h"
-//#include "ChargedParticleMakerBase.h"
 
 #include "TMVA/Reader.h"
 #include "TString.h"
@@ -23,11 +18,12 @@ class IPVReFitter;
 namespace LHCb {
 class Particle;
 class Vertex;
-};  // namespace LHCb
+}  // namespace LHCb
 
-/** @class TupleToolVtxIsoln TupleToolVtxIsoln.h
+/**
  *
- * \brief Fill isolation information for DecayTreeTuple
+ * @class TupleToolApplyIsolationMC.cpp TupleToolApplyIsolationMC.h
+ * @brief Fill isolation information for DecayTreeTuple
  *
  * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to
  * vertex give delta chi2 < specified window
@@ -36,13 +32,11 @@ class Vertex;
  * combination with any of the input Particles head_SMALLESTDELTACHI2: delta
  * chi2 of smallest delta chi2 combination with any of the input Particles
  *
- * \sa DecayTreeTuple
- *
  *  @todo Maybe one should get Tracks instead of Particles?
  *
- *  @author Mitesh Patel, Patrick Koppenburg
- *  @date   2008-04-15
- */
+ *  @date 2019-11-11
+ *
+ **/
 class TupleToolApplyIsolationMC : public TupleToolBase,
                                   virtual public IParticleTupleTool {
  public:
@@ -50,12 +44,12 @@ class TupleToolApplyIsolationMC : public TupleToolBase,
   TupleToolApplyIsolationMC( const std::string& type, const std::string& name,
                              const IInterface* parent );
 
-  virtual ~TupleToolApplyIsolationMC(){};  ///< Destructor
+  ~TupleToolApplyIsolationMC() override = default;
 
-  virtual StatusCode initialize();
+  StatusCode initialize() override;
 
   StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
-                   const std::string&, Tuples::Tuple& );
+                   const std::string&, Tuples::Tuple& ) override;
 
  protected:
  private:
@@ -71,8 +65,8 @@ class TupleToolApplyIsolationMC : public TupleToolBase,
   double getopening( const LHCb::Track*, const LHCb::Particle* );
   const LHCb::Vertex* originVertex( const LHCb::Particle*,
                                     const LHCb::Particle* ) const;
-  IDVAlgorithm*       m_dva;
 
+  IDVAlgorithm*            m_dva;
   IDistanceCalculator*     m_dist;
   const IVertexFit*        m_pVertexFit;
   IParticle2MCAssociator*  m_p2mcAssoc;
@@ -85,4 +79,5 @@ class TupleToolApplyIsolationMC : public TupleToolBase,
   std::string              m_weightsName;
   std::vector<std::string> m_inputParticles;
 };
+
 #endif  // TupleToolApplyIsolationMC_H

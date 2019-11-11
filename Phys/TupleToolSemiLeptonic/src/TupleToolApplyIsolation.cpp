@@ -95,14 +95,12 @@ StatusCode TupleToolApplyIsolation::initialize() {
   // m_Reader->AddVariable( "log(1-D_DIRA_OWNPV)",&dummy);
   // m_Reader->AddVariable( "log(1-Bplus_DIRA_OWNPV)",&dummy);
 
-  // reader->AddVariable("Bplus_PT",&Bplus_PTf);
-  // reader->AddVariable("Dst_PT",&Dst_PTf);
   m_Reader->BookMVA( "BDT method", m_weightsName );
-
   if ( !m_Reader ) {
     Error( "Unable to retrieve the IVertexFit tool" );
     return StatusCode::FAILURE;
   }
+
   return StatusCode::SUCCESS;
 }
 
@@ -260,8 +258,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
         StatusCode dump =
             m_dist->distance( (const LHCb::Particle*)part,
                               (const LHCb::Vertex*)&v, tmpip, tmpchi2 );
-        chi2 = tmpchi2;
 
+        chi2 = tmpchi2;
         if ( chi2 < 50 ) {
           dummy        = 4000;
           float bdtval = m_Reader->EvaluateMVA( "BDT method" );
@@ -345,7 +343,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     const MuonPID* muonPID = maxpart->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
 
-    const LHCb::MCParticle* mcp( NULL );
+    const LHCb::MCParticle* mcp( nullptr );
     if ( msgLevel( MSG::VERBOSE ) )
       verbose() << "Getting related MCP to " << maxpart << endmsg;
     mcp = m_p2mcAssoc->relatedMCP( maxpart );
@@ -391,7 +389,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     type                   = part2->proto()->track()->type();
     const MuonPID* muonPID = part2->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    const LHCb::MCParticle* mcp( NULL );
+
+    const LHCb::MCParticle* mcp( nullptr );
     if ( msgLevel( MSG::VERBOSE ) )
       verbose() << "Getting related MCP to " << part2 << endmsg;
     mcp = m_p2mcAssoc->relatedMCP( part2 );
@@ -437,7 +436,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     type                   = part3->proto()->track()->type();
     const MuonPID* muonPID = part3->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    const LHCb::MCParticle* mcp( NULL );
+
+    const LHCb::MCParticle* mcp( nullptr );
     if ( msgLevel( MSG::VERBOSE ) )
       verbose() << "Getting related MCP to " << part3 << endmsg;
     mcp = m_p2mcAssoc->relatedMCP( part3 );
@@ -483,7 +483,8 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     type                   = part4->proto()->track()->type();
     const MuonPID* muonPID = part4->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    const LHCb::MCParticle* mcp( NULL );
+
+    const LHCb::MCParticle* mcp( nullptr );
     if ( msgLevel( MSG::VERBOSE ) )
       verbose() << "Getting related MCP to " << part4 << endmsg;
     mcp = m_p2mcAssoc->relatedMCP( part4 );
@@ -519,15 +520,11 @@ const Vertex* TupleToolApplyIsolation::originVertex(
   if ( top == P || P->isBasicParticle() ) return nullptr;
 
   const SmartRefVector<LHCb::Particle>& dau = top->daughters();
-  if ( dau.empty() ) {
-    return nullptr;
-  }
+  if ( dau.empty() ) return nullptr;
 
   SmartRefVector<LHCb::Particle>::const_iterator it;
   for ( it = dau.begin(); dau.end() != it; ++it ) {
-    if ( P == *it ) {  // I found the daughter
-      return top->endVertex();
-    }
+    if ( P == *it ) return top->endVertex();  // I found the daughter
   }
 
   // vertex not yet found, get deeper in the decay:
@@ -537,6 +534,7 @@ const Vertex* TupleToolApplyIsolation::originVertex(
       if ( vv ) return vv;
     }
   }
+
   return nullptr;
 }
 

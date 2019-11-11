@@ -34,7 +34,7 @@ class Vertex;
  *
  *  @todo Maybe one should get Tracks instead of Particles?
  *
- *  @date   2019-11-11
+ *  @date 2019-11-11
  *
  **/
 class TupleToolApplyIsolation : public TupleToolBase,
@@ -53,9 +53,8 @@ class TupleToolApplyIsolation : public TupleToolBase,
 
  protected:
  private:
-  Float_t opening{}, minipchi2{}, newfdchi2{}, oldfdchi2{}, ghostprob{},
-      trackchi2{}, deltafd{}, pt{}, ip{}, chi2{}, type{}, vertexchi2{},
-      Dst_PT{}, dummy{};
+  Float_t opening, minipchi2, newfdchi2, oldfdchi2, ghostprob, trackchi2,
+      deltafd, pt, ip, chi2, type, vertexchi2, Dst_PT, dummy;
 
   bool   isTrackInDecay( const LHCb::Track*, std::vector<const LHCb::Track*> );
   double getminipchi( const LHCb::Particle* );
