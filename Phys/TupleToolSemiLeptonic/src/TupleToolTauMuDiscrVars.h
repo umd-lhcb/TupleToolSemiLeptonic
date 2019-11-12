@@ -1,6 +1,5 @@
-// $Id: TupleToolTauMuDiscrVars.h,v 1.10 2010-02-09 09:40:49 pkoppenb Exp $
-#ifndef JBOREL_TUPLETOOLTAUMUDISCRVARS_H
-#define JBOREL_TUPLETOOLTAUMUDISCRVARS_H 1
+#ifndef TupleToolTauMuDiscrVars_H
+#define TupleToolTauMuDiscrVars_H 1
 
 // Include files
 // from Gaudi
@@ -17,10 +16,9 @@ class Particle;
 class VertexBase;
 }  // namespace LHCb
 
-/** @class TupleToolTauMuDiscrVars TupleToolTauMuDiscrVars.h
- * jborel/TupleToolTauMuDiscrVars.h
- *
- * \brief Fill geometry related information for DecayTreeTuple
+/**
+ * @class TupleToolTauMuDiscrVars TupleToolTauMuDiscrVars.h
+ * @brief Fill geometry related information for DecayTreeTuple
  *
  * - head_MINIP : minimum impact parameter on any PV
  * - head_MINIPCHI2 : minimum chi2 IP on all PVs
@@ -87,24 +85,23 @@ class VertexBase;
  * - head_AllIPchi2 : IPchi2 wrt to all Vs
  * - head_AllDIRA : DIRA wrt to all PVs
  *
- * \sa DecayTreeTuple
+ * @sa DecayTreeTuple
  *
- *  @author Jeremie Borel
- *  @date   2007-11-07
+ * @author Jeremie Borel
+ * @date   2019-11-11
  */
 class TupleToolTauMuDiscrVars : public TupleToolBase,
                                 virtual public IParticleTupleTool {
  public:
-  /// Standard constructor
   TupleToolTauMuDiscrVars( const std::string& type, const std::string& name,
                            const IInterface* parent );
 
-  virtual ~TupleToolTauMuDiscrVars(){};  ///< Destructor
+  ~TupleToolTauMuDiscrVars() override = default;
 
-  virtual StatusCode initialize();
+  StatusCode initialize() override;
 
   StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
-                   const std::string&, Tuples::Tuple& );
+                   const std::string&, Tuples::Tuple& ) override;
 
  private:
   /// fill end vertex stuff
@@ -164,4 +161,5 @@ class TupleToolTauMuDiscrVars : public TupleToolBase,
   IPVReFitter* m_pvReFitter;
   std::string  m_pvReFitterName;
 };
-#endif  // JBOREL_TUPLETOOLTAUMUDISCRVARS_H
+
+#endif  // TupleToolTauMuDiscrVars_H

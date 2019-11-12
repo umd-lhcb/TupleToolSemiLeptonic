@@ -1,34 +1,28 @@
-// Include files
-
 // local
 #include "TupleToolSLTools.h"
 
-#include <Kernel/GetIDVAlgorithm.h>
-#include <Kernel/IDVAlgorithm.h>
-#include <Kernel/IDistanceCalculator.h>
-#include <Kernel/ILifetimeFitter.h>
-#include <Kernel/IVertexFit.h>
-#include "GaudiAlg/Tuple.h"
-#include "GaudiAlg/TupleObj.h"
+// from Phys
+#include "Kernel/GetIDVAlgorithm.h"
+#include "Kernel/IDVAlgorithm.h"
+#include "Kernel/IDistanceCalculator.h"
+#include "Kernel/ILifetimeFitter.h"
 #include "Kernel/IPVReFitter.h"
+#include "Kernel/IVertexFit.h"
 
+// from Gaudi
+#include "GaudiAlg/Tuple.h"
+
+// from LHCb
 #include "Event/Particle.h"
+
+// from ROOT
 #include "TLorentzVector.h"
 #include "TROOT.h"
 #include "TVector3.h"
 
 using namespace LHCb;
 
-//-----------------------------------------------------------------------------
-// Implementation file for class : TupleToolSLTools
-//
-// @author Mitesh Patel, Patrick Koppenburg
-// @date   2008-04-15
-//-----------------------------------------------------------------------------
-
-// Declaration of the Tool Factory
-// actually acts as a using namespace TupleTool
-DECLARE_TOOL_FACTORY( TupleToolSLTools )
+DECLARE_COMPONENT( TupleToolSLTools )
 
 //=============================================================================
 // Standard constructor, initializes variables
@@ -48,7 +42,6 @@ TupleToolSLTools::TupleToolSLTools( const std::string& type,
 }
 
 //=============================================================================
-
 StatusCode TupleToolSLTools::initialize() {
   const StatusCode sc = TupleToolBase::initialize();
   if ( sc.isFailure() ) return sc;
@@ -75,7 +68,6 @@ StatusCode TupleToolSLTools::initialize() {
 }
 
 //=============================================================================
-
 StatusCode TupleToolSLTools::fill( const Particle* mother, const Particle* P,
                                    const std::string& head,
                                    Tuples::Tuple&     tuple ) {
@@ -84,19 +76,10 @@ StatusCode TupleToolSLTools::fill( const Particle* mother, const Particle* P,
           "This should not happen, you are inside TupleToolSLTools.cpp :(" );
 
   bool test = true;
-  // --------------------------------------------------
 
   // find the origin vertex. Either the primary or the origin in the
   // decay
-  /*
-    const VertexBase* vtx = 0;
-    if( mother != P ) vtx = originVertex( mother, P );
-    if( !vtx ){
-    Error("Can't retrieve the origin vertex for " + prefix );
-    return StatusCode::FAILURE;
-    }
-  */
-  const LHCb::Particle*       mu_part( NULL );
+  const LHCb::Particle*       mu_part( nullptr );
   LHCb::Particle::ConstVector source;
   LHCb::Particle::ConstVector target;
 
@@ -113,10 +96,9 @@ StatusCode TupleToolSLTools::fill( const Particle* mother, const Particle* P,
   }
   do {
     target.clear();
-    for ( LHCb::Particle::ConstVector::const_iterator isource = source.begin();
-          isource != source.end(); isource++ ) {
-      if ( !( ( *isource )->daughters().empty() ) ) {
-        LHCb::Particle::ConstVector tmp = ( *isource )->daughtersVector();
+    for ( auto& isource : source ) {
+      if ( !( isource->daughters().empty() ) ) {
+        LHCb::Particle::ConstVector tmp = isource->daughtersVector();
 
         for ( LHCb::Particle::ConstVector::const_iterator itmp = tmp.begin();
               itmp != tmp.end(); itmp++ ) {
@@ -132,10 +114,9 @@ StatusCode TupleToolSLTools::fill( const Particle* mother, const Particle* P,
       }  // if endVertex
     }    // isource
     source = target;
-  } while ( target.size() > 0 );
+  } while ( !target.empty() );
 
   // vetex selected proton and muon
-
   pmu_vert = P->endVertex();
   PV       = m_dva->bestVertex( P );
 
@@ -170,6 +151,7 @@ StatusCode TupleToolSLTools::fill( const Particle* mother, const Particle* P,
       Preg_B * Mdirn.X(), Preg_B * Mdirn.Y(), Preg_B * Mdirn.Z(),
       sqrt( Preg_B * Mdirn.Z() * Preg_B * Mdirn.Z() + m_Bmass * m_Bmass ) );
   double Preg = ( regBfourvect - TLV_P ).P();
+
   if ( m_momcov ) {
     const Gaudi::SymMatrix4x4& mom_cov    = P->momCovMatrix();
     const Gaudi::Matrix4x3&    posmom_cov = P->posMomCovMatrix();
@@ -247,15 +229,10 @@ StatusCode TupleToolSLTools::fill( const Particle* mother, const Particle* P,
     test &= tuple->column( prefix + "_Q2BESTERR", -1000. );
   }
   debug() << "PAST FILL " << endmsg;
-  //}
-  // replaced by V.B. 20.Aug.2k+9: (parts2Vertex,vtxWithExtraTrack);
-  // Remove the added track from parts2Vertex
 
   return StatusCode( test );
 }
 
-//=========================================================================
-//
 //=========================================================================
 StatusCode TupleToolSLTools::fillVertex( const LHCb::VertexBase* vtx,
                                          const std::string&      vtx_name,
@@ -280,7 +257,6 @@ StatusCode TupleToolSLTools::fillVertex( const LHCb::VertexBase* vtx,
       const Gaudi::SymMatrix3x3& m = vtx->covMatrix();
       test &= tuple->matrix( vtx_name + "_COV_", m );
     }
-    //    test &= tuple->matrix(  vtx_name + "_COV_", m );
   }
   if ( !test )
     Warning( "Error in fillVertex " + vtx_name, StatusCode( test ), 1 )
@@ -311,13 +287,8 @@ std::vector<TLorentzVector> TupleToolSLTools::recoNu( TLorentzVector Y,
   double px_rest_sq = ( E_nurest * E_nurest - Ppmu.Py() * Ppmu.Py() );
 
   // Find magnitude of momentum along mother dirn in rest frame
-
-  /*else
-  {
-      return p_nu;
-  }*/
-
   // px_rest = sqrt( E_nurest * E_nurest  - Ppmu.Py() * Ppmu.Py() );
+
   // quadratic coefficients
   double A = ( Y ).E() * ( Y ).E() - Ppmu.Px() * Ppmu.Px();
   double B = -2 * Ppmu.Px() * ( E_nurest * E_pmurest + px_rest_sq );
@@ -335,13 +306,14 @@ std::vector<TLorentzVector> TupleToolSLTools::recoNu( TLorentzVector Y,
     p1nu = ( -B + sqrt( B * B - 4 * A * C ) ) / ( 2 * A );
     p2nu = ( -B - sqrt( B * B - 4 * A * C ) ) / ( 2 * A );
   }
+
   // reconstruct neutrino 3 vectors and 4 vectors
   TVector3 P_nu_recon_3V1 = (M_dirn)*p1nu + Perp_dirn * -Ppmu.Py();
   TVector3 P_nu_recon_3V2 = (M_dirn)*p2nu + Perp_dirn * -Ppmu.Py();
-  p_nu.push_back( TLorentzVector(
-      P_nu_recon_3V1, sqrt( p1nu * p1nu + Ppmu.Py() * Ppmu.Py() ) ) );
-  p_nu.push_back( TLorentzVector(
-      P_nu_recon_3V2, sqrt( p2nu * p2nu + Ppmu.Py() * Ppmu.Py() ) ) );
+  p_nu.emplace_back( P_nu_recon_3V1,
+                     sqrt( p1nu * p1nu + Ppmu.Py() * Ppmu.Py() ) );
+  p_nu.emplace_back( P_nu_recon_3V2,
+                     sqrt( p2nu * p2nu + Ppmu.Py() * Ppmu.Py() ) );
   return p_nu;
 }
 
@@ -358,8 +330,6 @@ std::vector<double> TupleToolSLTools::Mcorr_errors(
   double py = p.Py();
   double pz = p.Pz();
   double k  = p.E();
-  //     double P_T = (p.Vect()).Perp((v1 - v2));
-  //   double M_corr =sqrt(p.M2() + P_T * P_T) + P_T;
 
   double dMcdpx =
       ( 2 *
@@ -1513,6 +1483,7 @@ std::vector<double> TupleToolSLTools::q2_errors( TVector3 v1, TVector3 v2,
   double dq2dnumom_low   = dq2dpnu( pnu_low, lepton, flight, p );
   double dq2dnumom_high  = dq2dpnu( pnu_high, lepton, flight, p );
 
+  // magnificent spaghetti!!!
   double dpperpdx =
       ( -( ( ( 2 * x - 2 * xp ) *
              ( pow( pz, 2 ) * ( pow( x, 2 ) - 2 * x * xp + pow( xp, 2 ) +
@@ -1545,6 +1516,7 @@ std::vector<double> TupleToolSLTools::q2_errors( TVector3 v1, TVector3 v2,
               ( pow( x, 2 ) - 2 * x * xp + pow( xp, 2 ) + pow( y, 2 ) -
                 2 * y * yp + pow( yp, 2 ) + pow( z, 2 ) - 2 * z * zp +
                 pow( zp, 2 ) ) ) );
+
   double dpperpdy =
       ( -( ( ( 2 * y - 2 * yp ) *
              ( pow( pz, 2 ) * ( pow( x, 2 ) - 2 * x * xp + pow( xp, 2 ) +
@@ -1748,5 +1720,4 @@ std::vector<double> TupleToolSLTools::q2_errors( TVector3 v1, TVector3 v2,
   q2_err.push_back( sqrt( q2err_high ) );
 
   return q2_err;
-  //     double P_T = (p.Vect()).Perp((v1 - v2));
 }

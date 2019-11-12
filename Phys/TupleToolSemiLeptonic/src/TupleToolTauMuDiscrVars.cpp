@@ -1,32 +1,22 @@
-// $Id: TupleToolTauMuDiscrVars.cpp,v 1.17 2010-05-12 20:01:40 jpalac Exp $
-// Include files
-
 // local
 #include "TupleToolTauMuDiscrVars.h"
 
-#include <Kernel/GetIDVAlgorithm.h>
-#include <Kernel/IDistanceCalculator.h>
+// from Phys
+#include "Kernel/GetIDVAlgorithm.h"
 #include "Kernel/IDVAlgorithm.h"
+#include "Kernel/IDistanceCalculator.h"
 #include "Kernel/IPVReFitter.h"
 
+// from Gaudi
 #include "GaudiAlg/Tuple.h"
-#include "GaudiAlg/TupleObj.h"
 
+// from LHCb
 #include "Event/Particle.h"
-
 #include "LoKi/Math.h"
 
 using namespace LHCb;
 
-//-----------------------------------------------------------------------------
-// Implementation file for class : GeometryTupleTool
-//
-// 2007-11-07 : Jeremie Borel
-//-----------------------------------------------------------------------------
-
-// Declaration of the Tool Factory
-// actually acts as a using namespace TupleTool
-DECLARE_TOOL_FACTORY( TupleToolTauMuDiscrVars )
+DECLARE_COMPONENT( TupleToolTauMuDiscrVars )
 
 //=============================================================================
 // Standard constructor, initializes variables
@@ -35,8 +25,8 @@ TupleToolTauMuDiscrVars::TupleToolTauMuDiscrVars( const std::string& type,
                                                   const std::string& name,
                                                   const IInterface*  parent )
     : TupleToolBase( type, name, parent ),
-      m_dist( 0 ),
-      m_dva( 0 ),
+      m_dist( nullptr ),
+      m_dva( nullptr ),
       m_pvReFitterName( "LoKi::PVReFitter:PUBLIC" ) {
   declareInterface<IParticleTupleTool>( this );
   declareProperty( "RefitPVs", m_refitPVs = false,
@@ -46,15 +36,9 @@ TupleToolTauMuDiscrVars::TupleToolTauMuDiscrVars( const std::string& type,
                    "makes sure a public instance is used)" );
   declareProperty( "FillMultiPV", m_fillMultiPV = false,
                    "Fill Multi PV arrays" );
-
-  // declareProperty("FillMother",m_fillMother=true,
-  //                "Turn false if the mother is expected to be NULL, will not
-  //                fill mother PV info");
-  // replaced by Verbose
 }
 
 //=============================================================================
-
 StatusCode TupleToolTauMuDiscrVars::initialize() {
   const StatusCode sc = TupleToolBase::initialize();
   if ( sc.isFailure() ) return sc;
@@ -237,9 +221,8 @@ StatusCode TupleToolTauMuDiscrVars::fillMinIP( const Particle*    P,
       verbose() << "Filling IP " << prefix + "_MINIP : " << P
                 << " PVs:" << PV.size() << endmsg;
 
-    for ( RecVertex::Range::const_iterator pv = PV.begin(); pv != PV.end();
-          ++pv ) {
-      RecVertex newPV( **pv );
+    for ( auto pv : PV ) {
+      RecVertex newPV( *pv );
       if ( m_refitPVs ) {
         StatusCode scfit = m_pvReFitter->remove( P, &newPV );
         if ( !scfit ) {
@@ -251,10 +234,11 @@ StatusCode TupleToolTauMuDiscrVars::fillMinIP( const Particle*    P,
       double ip, chi2;
       // StatusCode test2 = m_dist->distance ( P, *pv, ip, chi2 );
 
-      LHCb::VertexBase* newPVPtr = (LHCb::VertexBase*)&newPV;
+      auto*      newPVPtr = (LHCb::VertexBase*)&newPV;
       StatusCode        test2    = m_dist->distance( P, newPVPtr, ip, chi2 );
       ips.push_back( ip );
       ipchi2s.push_back( chi2 );
+
       if ( P->endVertex() ) diras.push_back( dira( newPVPtr, P ) );
       if ( test2 && isVerbose() ) {
         if ( ( ip < ipmin ) || ( ipmin < 0. ) ) {
@@ -277,6 +261,7 @@ StatusCode TupleToolTauMuDiscrVars::fillMinIP( const Particle*    P,
       }
     }
   }
+
   if ( isVerbose() ) {
     if ( msgLevel( MSG::VERBOSE ) ) {
       verbose() << "Filling IP " << prefix + "_MINIP " << ipmin << " at "
@@ -303,6 +288,7 @@ StatusCode TupleToolTauMuDiscrVars::fillMinIP( const Particle*    P,
   if ( !test ) Warning( "Error in fillMinIP", StatusCode::FAILURE, 1 );
   return StatusCode( test );
 }
+
 //=========================================================================
 // fill vertex stuff
 //=========================================================================
@@ -338,6 +324,7 @@ StatusCode TupleToolTauMuDiscrVars::fillVertex( const LHCb::VertexBase* vtx,
         .ignore();
   return StatusCode( test );
 }
+
 //=========================================================================
 // fill flight distance, angle...
 //=========================================================================
@@ -370,6 +357,7 @@ StatusCode TupleToolTauMuDiscrVars::fillFlight(
     Warning( "Error in fillFlight " + prefix, StatusCode( test ), 1 ).ignore();
   return StatusCode( test );
 }
+
 // =====================================================
 // find origin vertex in the decay chain
 // =====================================================
@@ -377,13 +365,12 @@ const VertexBase* TupleToolTauMuDiscrVars::originVertex(
     const Particle* top, const Particle* P ) const {
   // this used to pass back zero if P was a basic particle.
   // I don't think that's necessary. R Lambert 2009-08-14
-  if ( top == P || top->isBasicParticle() ) return 0;
+  if ( top == P || top->isBasicParticle() ) return nullptr;
 
   const SmartRefVector<LHCb::Particle>& dau = top->daughters();
-  if ( dau.empty() ) return 0;
+  if ( dau.empty() ) return nullptr;
 
-  for ( SmartRefVector<LHCb::Particle>::const_iterator it = dau.begin();
-        dau.end() != it; ++it ) {
+  for ( auto it = dau.begin(); dau.end() != it; ++it ) {
     if ( P == *it ) {  // I found the daughter
       if ( msgLevel( MSG::VERBOSE ) )
         verbose() << "It's a daughter, retrning mother's endvertex : "
@@ -393,8 +380,7 @@ const VertexBase* TupleToolTauMuDiscrVars::originVertex(
   }
 
   // vertex not yet found, get deeper in the decay:
-  for ( SmartRefVector<LHCb::Particle>::const_iterator it = dau.begin();
-        dau.end() != it; ++it ) {
+  for ( auto it = dau.begin(); dau.end() != it; ++it ) {
     if ( P != *it && !( *it )->isBasicParticle() ) {
       const VertexBase* vv = originVertex( *it, P );
       if ( msgLevel( MSG::VERBOSE ) )
@@ -402,5 +388,5 @@ const VertexBase* TupleToolTauMuDiscrVars::originVertex(
       if ( vv ) return vv;
     }
   }
-  return 0;
+  return nullptr;
 }

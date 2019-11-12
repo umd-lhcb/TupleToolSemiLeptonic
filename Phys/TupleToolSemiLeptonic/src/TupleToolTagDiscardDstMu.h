@@ -1,8 +1,6 @@
-#ifndef TUPLETOOLTAGDISCARDDSTMU_H
-#define TUPLETOOLTAGDISCARDDSTMU_H 1
+#ifndef TupleToolTagDiscardDstMu_H
+#define TupleToolTagDiscardDstMu_H 1
 
-// Include files
-// from Gaudi
 #include "DecayTreeTupleBase/TupleToolBase.h"
 #include "Kernel/IParticleTupleTool.h"  // Interface
 
@@ -16,37 +14,18 @@ class Particle;
 class Vertex;
 }  // namespace LHCb
 
-/** @class TupleToolTagDiscardDstMu TupleToolTagDiscardDstMu.h
- *
- * \brief Fill isolation information for DecayTreeTuple
- *
- * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to
- * vertex give delta chi2 < specified window
- * - head_NOPARTWITHINCHI2WDW : no. of non-signal particles that when added to
- * vertex give chi2 < specified window head_SMALLESTCHI2: chi2 of smallest chi2
- * combination with any of the input Particles head_SMALLESTDELTACHI2: delta
- * chi2 of smallest delta chi2 combination with any of the input Particles
- *
- * \sa DecayTreeTuple
- *
- *  @todo Maybe one should get Tracks instead of Particles?
- *
- *  @author Mitesh Patel, Patrick Koppenburg
- *  @date   2008-04-15
- */
 class TupleToolTagDiscardDstMu : public TupleToolBase,
                                  virtual public IParticleTupleTool {
  public:
-  /// Standard constructor
   TupleToolTagDiscardDstMu( const std::string& type, const std::string& name,
                             const IInterface* parent );
 
-  virtual ~TupleToolTagDiscardDstMu(){};  ///< Destructor
+  ~TupleToolTagDiscardDstMu() override = default;  ///< Destructor
 
-  virtual StatusCode initialize();
+  StatusCode initialize() override;
 
   StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
-                   const std::string&, Tuples::Tuple& );
+                   const std::string&, Tuples::Tuple& ) override;
 
  private:
   const LHCb::Vertex* originVertex( const LHCb::Particle*,
@@ -83,4 +62,4 @@ class TupleToolTagDiscardDstMu : public TupleToolBase,
   std::vector<std::string>   m_inputParticles;
 };
 
-#endif  // TUPLETOOLTAGDISCARDDSTMU_H
+#endif  // TupleToolTagDiscardDstMu_H

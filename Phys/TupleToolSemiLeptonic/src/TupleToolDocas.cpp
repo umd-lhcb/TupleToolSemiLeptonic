@@ -1,19 +1,16 @@
-// Include files
 // local
 #include "TupleToolDocas.h"
-#include <Kernel/GetIDVAlgorithm.h>
-#include <Kernel/IDVAlgorithm.h>
-#include <Kernel/IDistanceCalculator.h>
+
+// from Phys
+#include "Kernel/GetIDVAlgorithm.h"
+#include "Kernel/IDVAlgorithm.h"
+#include "Kernel/IDistanceCalculator.h"
+
 using namespace LHCb;
 using namespace Gaudi::Units;
 using namespace ROOT::Math;
 
-//-----------------------------------------------------------------------------
-// Implementation file for class : TupleToolDocas
-// @author Paul Seyfert
-// @date   2016-11-08
-//-----------------------------------------------------------------------------
-DECLARE_TOOL_FACTORY( TupleToolDocas )
+DECLARE_COMPONENT( TupleToolDocas )
 
 /**
  * @brief constructor
@@ -22,7 +19,6 @@ DECLARE_TOOL_FACTORY( TupleToolDocas )
  * n-th element of Name names the branch name for the DOCA between the
  * particle the n-th element of Location1 and the n-th element of Location2
  */
-
 TupleToolDocas::TupleToolDocas( const std::string& type,
                                 const std::string& name,
                                 const IInterface*  parent )

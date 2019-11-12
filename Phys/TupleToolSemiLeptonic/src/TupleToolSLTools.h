@@ -1,8 +1,6 @@
-#ifndef WSUTCLIFFE_TupleToolSLTools_H
-#define WSUTCLIFFE_TupleToolSLTools_H
+#ifndef TupleToolSLTools_H
+#define TupleToolSLTools_H 1
 
-// Include files
-// from Gaudi
 #include "DecayTreeTupleBase/TupleToolBase.h"
 #include "Kernel/IParticleTupleTool.h"  // Interface
 #include "TLorentzVector.h"
@@ -20,37 +18,18 @@ class Particle;
 class Vertex;
 }  // namespace LHCb
 
-/** @class TupleToolSLTools TupleToolSLTools.h
- *
- * \brief Fill isolation information for DecayTreeTuple
- *
- * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to
- * vertex give delta chi2 < specified window
- * - head_NOPARTWITHINCHI2WDW : no. of non-signal particles that when added to
- * vertex give chi2 < specified window head_SMALLESTCHI2: chi2 of smallest chi2
- * combination with any of the input Particles head_SMALLESTDELTACHI2: delta
- * chi2 of smallest delta chi2 combination with any of the input Particles
- *
- * \sa DecayTreeTuple
- *
- *  @todo Maybe one should get Tracks instead of Particles?
- *
- *  @author Mitesh Patel, Patrick Koppenburg
- *  @date   2008-04-15
- */
 class TupleToolSLTools : public TupleToolBase,
                          virtual public IParticleTupleTool {
  public:
-  /// Standard constructor
   TupleToolSLTools( const std::string& type, const std::string& name,
                     const IInterface* parent );
 
-  virtual ~TupleToolSLTools(){};  ///< Destructor
+  ~TupleToolSLTools() override = default;
 
-  virtual StatusCode initialize();
+  StatusCode initialize() override;
 
   StatusCode fill( const LHCb::Particle*, const LHCb::Particle*,
-                   const std::string&, Tuples::Tuple& );
+                   const std::string&, Tuples::Tuple& ) override;
 
  private:
   double Mcorr( TLorentzVector, TVector3 );
@@ -79,12 +58,4 @@ class TupleToolSLTools : public TupleToolBase,
   bool                       m_momcov;
 };
 
-#endif  // WSUTCLIFFE_TupleToolSLTools_H
-
-/**
- *
- * Copied from W. Sutcliffe
- *
- * Contact the original author for license information.
- *
- */
+#endif  // TupleToolSLTools_H
