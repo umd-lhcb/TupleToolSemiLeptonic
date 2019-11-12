@@ -5,5 +5,11 @@
 ! -----------------------------------------------------------------------------
 
 ! 2019-08-21 - Yipeng Sun
-  - initial commit:
-    * Converting to a standard DaVinci subproject layout.
+  - Initial commit.
+  - Converting to a standard DaVinci subproject layout.
+
+! 2019-11-12 - Yipeng Sun
+  - v0.2
+  - Added all TupleTools from CERN SemileptonicCommonTools repo.
+  - Ported all tools so that they compile with the latest version of DaVinci
+    (v45r3).
