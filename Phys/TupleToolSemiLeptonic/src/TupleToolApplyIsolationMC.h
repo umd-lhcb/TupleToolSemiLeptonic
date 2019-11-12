@@ -26,22 +26,19 @@ class Vertex;
  * @brief Fill isolation information for DecayTreeTuple
  *
  * - head_NOPARTWITHINDCHI2WDW : no. of non-signal particles that when added to
- * vertex give delta chi2 < specified window
+ *   vertex give delta chi2 < specified window
  * - head_NOPARTWITHINCHI2WDW : no. of non-signal particles that when added to
- * vertex give chi2 < specified window head_SMALLESTCHI2: chi2 of smallest chi2
- * combination with any of the input Particles head_SMALLESTDELTACHI2: delta
- * chi2 of smallest delta chi2 combination with any of the input Particles
+ *   vertex give chi2 < specified window head_SMALLESTCHI2: chi2 of smallest
+ *chi2 combination with any of the input Particles head_SMALLESTDELTACHI2:
+ *delta chi2 of smallest delta chi2 combination with any of the input Particles
  * - Additional MC info.
  *
- *  @todo Maybe one should get Tracks instead of Particles?
- *
- *  @date 2019-11-11
+ * @date 2019-11-11
  *
  **/
 class TupleToolApplyIsolationMC : public TupleToolBase,
                                   virtual public IParticleTupleTool {
  public:
-  /// Standard constructor
   TupleToolApplyIsolationMC( const std::string& type, const std::string& name,
                              const IInterface* parent );
 
