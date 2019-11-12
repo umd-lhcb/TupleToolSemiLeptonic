@@ -31,6 +31,7 @@ class Vertex;
  * vertex give chi2 < specified window head_SMALLESTCHI2: chi2 of smallest chi2
  * combination with any of the input Particles head_SMALLESTDELTACHI2: delta
  * chi2 of smallest delta chi2 combination with any of the input Particles
+ * - Additional MC info.
  *
  *  @todo Maybe one should get Tracks instead of Particles?
  *
