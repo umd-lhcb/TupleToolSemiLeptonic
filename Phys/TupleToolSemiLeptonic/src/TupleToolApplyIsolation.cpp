@@ -24,6 +24,7 @@
 #include "TString.h"
 #include "TSystem.h"
 
+#include <cmath>
 #include <functional>
 #include <string>
 

@@ -177,17 +177,14 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     for ( auto& isource : source ) {
       if ( !( isource->daughters().empty() ) ) {
         LHCb::Particle::ConstVector tmp = isource->daughtersVector();
-
-        for ( LHCb::Particle::ConstVector::const_iterator itmp = tmp.begin();
-              itmp != tmp.end(); itmp++ ) {
-          target.push_back( *itmp );
+        for ( auto& itmp : tmp ) {
+          target.push_back( itmp );
           // Add the final states, i.e. particles with proto and ignoring
           // gammas
-          if ( ( *itmp )->proto() && 22 != ( *itmp )->particleID().pid() ) {
-            finalStates.push_back( *itmp );
-            daughtertracks.push_back( ( *itmp )->proto()->track() );
-            if ( ( *itmp )->particleID().abspid() == 413 )
-              Dst_PT = ( *itmp )->pt();
+          if ( itmp->proto() && 22 != itmp->particleID().pid() ) {
+            finalStates.push_back( itmp );
+            daughtertracks.push_back( itmp->proto()->track() );
+            if ( itmp->particleID().abspid() == 413 ) Dst_PT = itmp->pt();
           }
         }
       }  // if endVertex
@@ -208,7 +205,6 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
 
   // number below am IPCHI2 threshold isnt that useful, will probably remove it
   LHCb::Particle::ConstVector theParts;
-
   for ( auto& m_inputParticle : m_inputParticles ) {
     if ( !exist<LHCb::Particle::Range>( m_inputParticle + "/Particles" ) ) {
       if ( msgLevel( MSG::DEBUG ) )
