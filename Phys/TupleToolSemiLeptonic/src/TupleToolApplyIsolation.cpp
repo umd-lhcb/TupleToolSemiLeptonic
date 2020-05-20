@@ -138,24 +138,24 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   LHCb::Particle::ConstVector parts2Vertex;
   LHCb::Particle::ConstVector parts2VertexD;
 
-  double                      angle, angle2, angle3, angle4;
-  double                      maxchi2 = -99;
-  double                      mchi22  = -99;
-  double                      mchi23  = -99;
-  double                      mchi24  = -99;
-  double                      maxbdt  = -2;
-  double                      bdt2    = -2;
-  double                      bdt3    = -2;
-  double                      bdt4    = -2;
-  int                         trueID  = 0;
-  int                         _sc     = -999;
-  int                         _sc2    = -999;
-  int                         _sc3    = -999;
-  int                         _sc4    = -999;
-  const LHCb::Particle*       maxpart;
-  const LHCb::Particle*       part2;
-  const LHCb::Particle*       part3;
-  const LHCb::Particle*       part4;
+  double                angle, angle2, angle3, angle4;
+  double                maxchi2 = -99;
+  double                mchi22  = -99;
+  double                mchi23  = -99;
+  double                mchi24  = -99;
+  double                maxbdt  = -2;
+  double                bdt2    = -2;
+  double                bdt3    = -2;
+  double                bdt4    = -2;
+  int                   trueID  = 0;
+  int                   _sc     = -999;
+  int                   _sc2    = -999;
+  int                   _sc3    = -999;
+  int                   _sc4    = -999;
+  const LHCb::Particle* maxpart;
+  const LHCb::Particle* part2;
+  const LHCb::Particle* part3;
+  const LHCb::Particle* part4;
 
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
@@ -575,11 +575,11 @@ double TupleToolApplyIsolation::getminipchi( const LHCb::Particle* track ) {
           m_dist->distance( (const LHCb::Particle*)track, pv, ip, chi2 );
       if ( ( chi2 < minchi2 ) || ( minchi2 < 0. ) ) {
         LHCb::RecVertex newPV( *pv );
-        StatusCode       scfit    = m_pvReFitter->remove( track, &newPV );
-        auto*           newPVPtr  = (LHCb::RecVertex*)&newPV;
-        test2                     = m_dist->distance( (LHCb::Particle*)track,
+        StatusCode      scfit    = m_pvReFitter->remove( track, &newPV );
+        auto*           newPVPtr = (LHCb::RecVertex*)&newPV;
+        test2                    = m_dist->distance( (LHCb::Particle*)track,
                                   (LHCb::VertexBase*)newPVPtr, ip, chi2 );
-        minchi2                   = chi2;
+        minchi2                  = chi2;
       }
     }
   }

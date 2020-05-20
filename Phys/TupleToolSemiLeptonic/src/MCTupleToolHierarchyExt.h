@@ -15,7 +15,7 @@
 // Include files
 // from Gaudi
 #include "DecayTreeTupleBase/TupleToolBase.h"
-#include "Kernel/IMCParticleTupleTool.h" // Interface
+#include "Kernel/IMCParticleTupleTool.h"  // Interface
 
 // struct Particle2MCLinker;
 #include "Kernel/IDaVinciAssociatorsWrapper.h"
@@ -45,15 +45,17 @@
  *  @author Stephane Poss
  *  @date   2008-02-28
  */
-class MCTupleToolHierarchy : public TupleToolBase, virtual public IMCParticleTupleTool {
-
-public:
+class MCTupleToolHierarchy : public TupleToolBase,
+                             virtual public IMCParticleTupleTool {
+ public:
   /// Standard constructor
-  MCTupleToolHierarchy( const std::string& type, const std::string& name, const IInterface* parent );
+  MCTupleToolHierarchy( const std::string& type, const std::string& name,
+                        const IInterface* parent );
 
-  virtual ~MCTupleToolHierarchy(){}; ///< Destructor
+  virtual ~MCTupleToolHierarchy(){};  ///< Destructor
 
-  StatusCode fill( const LHCb::MCParticle*, const LHCb::MCParticle*, const std::string&, Tuples::Tuple& ) override;
+  StatusCode fill( const LHCb::MCParticle*, const LHCb::MCParticle*,
+                   const std::string&, Tuples::Tuple& ) override;
 };
 
-#endif // SPOSS_TUPLETOOLMCHIERARCHY_H
+#endif  // SPOSS_TUPLETOOLMCHIERARCHY_H

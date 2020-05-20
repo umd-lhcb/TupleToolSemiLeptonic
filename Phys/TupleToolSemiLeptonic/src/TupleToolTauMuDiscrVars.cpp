@@ -235,7 +235,7 @@ StatusCode TupleToolTauMuDiscrVars::fillMinIP( const Particle*    P,
       // StatusCode test2 = m_dist->distance ( P, *pv, ip, chi2 );
 
       auto*      newPVPtr = (LHCb::VertexBase*)&newPV;
-      StatusCode        test2    = m_dist->distance( P, newPVPtr, ip, chi2 );
+      StatusCode test2    = m_dist->distance( P, newPVPtr, ip, chi2 );
       ips.push_back( ip );
       ipchi2s.push_back( chi2 );
 

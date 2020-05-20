@@ -158,7 +158,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
 
   const LHCb::MCParticle* mcp = getMCParticle( P );
   // pointer is ready, prepare the values
-  const SmartRefVector<LHCb::MCVertex>&    EndVertices = mcp->endVertices();
+  const SmartRefVector<LHCb::MCVertex>& EndVertices = mcp->endVertices();
 
   auto itV = EndVertices.begin();
   if ( EndVertices.size() > 1 ) ++itV;

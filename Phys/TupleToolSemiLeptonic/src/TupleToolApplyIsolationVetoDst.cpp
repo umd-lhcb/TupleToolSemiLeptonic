@@ -133,8 +133,8 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   LHCb::Particle::ConstVector parts2VertexDst;
   LHCb::Particle::ConstVector parts2VertexD;
 
-  double                      maxbdt[m_nWrite];
-  const LHCb::Particle*       SelParts[m_nWrite];
+  double                maxbdt[m_nWrite];
+  const LHCb::Particle* SelParts[m_nWrite];
 
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
@@ -195,7 +195,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
 
   // number below am IPCHI2 threshold isnt that useful, will probably remove it
   LHCb::Particle::ConstVector theParts;
-  LHCb::Vertex DstVertex;
+  LHCb::Vertex                DstVertex;
 
   float DstBDT1 = -2;
   float DstBDT2 = -2;

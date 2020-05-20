@@ -41,16 +41,16 @@ class TupleToolApplyIsolationVetoDst : public TupleToolBase,
 
   bool                isTrackInDecay( const LHCb::Track*,
                                       const std::vector<const LHCb::Track*>& );
-  double getminipchi( const LHCb::Particle* );
-  double getfdchi2( const LHCb::Track*, LHCb::Vertex );
-  double getopening( const LHCb::Track*, const LHCb::Particle* );
+  double              getminipchi( const LHCb::Particle* );
+  double              getfdchi2( const LHCb::Track*, LHCb::Vertex );
+  double              getopening( const LHCb::Track*, const LHCb::Particle* );
   const LHCb::Vertex* originVertex( const LHCb::Particle*,
                                     const LHCb::Particle* ) const;
   void                writeParticle( const LHCb::Particle* P, double bdt,
-                                     const std::string& name, Tuples::Tuple& tuple, std::string prefix,
-                      const LHCb::Particle* Mother );
+                                     const std::string& name, Tuples::Tuple& tuple,
+                                     std::string prefix, const LHCb::Particle* Mother );
 
-  IDVAlgorithm* m_dva;
+  IDVAlgorithm*                        m_dva;
   IDistanceCalculator*                 m_dist;
   const IVertexFit*                    m_pVertexFit;
   std::vector<IParticle2MCAssociator*> m_p2mcAssocs;

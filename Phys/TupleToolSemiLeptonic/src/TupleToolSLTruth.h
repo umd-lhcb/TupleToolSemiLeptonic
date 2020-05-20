@@ -53,11 +53,11 @@ class TupleToolSLTruth : public TupleToolBase,
  private:
   typedef std::vector<const LHCb::Particle*> ParticleVector;
 
-  std::vector<IParticle2MCAssociator*>       m_p2mcAssocs;
-  std::vector<std::string>                   m_p2mcAssocTypes;
-  std::vector<std::string>                   m_toolList;
-  std::vector<IMCParticleTupleTool*>         m_mcTools;
-  IParticleDescendants* m_particleDescendants;
+  std::vector<IParticle2MCAssociator*> m_p2mcAssocs;
+  std::vector<std::string>             m_p2mcAssocTypes;
+  std::vector<std::string>             m_toolList;
+  std::vector<IMCParticleTupleTool*>   m_mcTools;
+  IParticleDescendants*                m_particleDescendants;
 };
 
 #endif  // TupleToolSLTruth_H

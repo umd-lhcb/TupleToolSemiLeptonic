@@ -154,12 +154,12 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
   LHCb::Particle::ConstVector parts2Vertex;
   LHCb::Particle::ConstVector parts2VertexD;
 
-  double                      maxbdt = -2;
-  double                      bdt2   = -2;
-  double                      bdt3   = -2;
-  const LHCb::Particle*       maxpart;
-  const LHCb::Particle*       part2;
-  const LHCb::Particle*       part3;
+  double                maxbdt = -2;
+  double                bdt2   = -2;
+  double                bdt3   = -2;
+  const LHCb::Particle* maxpart;
+  const LHCb::Particle* part2;
+  const LHCb::Particle* part3;
 
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
@@ -309,7 +309,7 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     type                   = maxpart->proto()->track()->type();
     const MuonPID* muonPID = maxpart->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    truepid = 0;
+    truepid                = 0;
 
     const LHCb::MCParticle* mcmaxpart( nullptr );
     for ( auto& m_p2mcAssoc : m_p2mcAssocs ) {
@@ -360,7 +360,7 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     type                   = part2->proto()->track()->type();
     const MuonPID* muonPID = part2->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    truepid = 0;
+    truepid                = 0;
 
     const LHCb::MCParticle* mcpart2( nullptr );
     for ( auto& m_p2mcAssoc : m_p2mcAssocs ) {
@@ -411,7 +411,7 @@ StatusCode TupleToolApplyIsolationMC::fill( const Particle*    mother,
     type                   = part3->proto()->track()->type();
     const MuonPID* muonPID = part3->proto()->muonPID();
     ismuon                 = muonPID ? muonPID->IsMuon() : false;
-    truepid = 0;
+    truepid                = 0;
 
     const LHCb::MCParticle* mcpart3( nullptr );
     for ( auto& m_p2mcAssoc : m_p2mcAssocs ) {

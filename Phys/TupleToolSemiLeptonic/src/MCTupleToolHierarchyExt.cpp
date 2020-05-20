@@ -36,14 +36,18 @@ DECLARE_COMPONENT( MCTupleToolHierarchy )
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-MCTupleToolHierarchy::MCTupleToolHierarchy( const std::string& type, const std::string& name, const IInterface* parent )
+MCTupleToolHierarchy::MCTupleToolHierarchy( const std::string& type,
+                                            const std::string& name,
+                                            const IInterface*  parent )
     : TupleToolBase( type, name, parent ) {
   declareInterface<IMCParticleTupleTool>( this );
 }
 
 //=============================================================================
-StatusCode MCTupleToolHierarchy::fill( const LHCb::MCParticle*, const LHCb::MCParticle* mcp, const std::string& head,
-                                       Tuples::Tuple& tuple ) {
+StatusCode MCTupleToolHierarchy::fill( const LHCb::MCParticle*,
+                                       const LHCb::MCParticle* mcp,
+                                       const std::string&      head,
+                                       Tuples::Tuple&          tuple ) {
   const std::string prefix = fullName( head );
   bool              test   = true;
 
@@ -82,7 +86,8 @@ StatusCode MCTupleToolHierarchy::fill( const LHCb::MCParticle*, const LHCb::MCPa
   test &= tuple->column( prefix + "_MC_GD_MOTHER_ID", mc_gd_mother_id );
   test &= tuple->column( prefix + "_MC_GD_MOTHER_KEY", mc_gd_mother_key );
   test &= tuple->column( prefix + "_MC_GD_GD_MOTHER_ID", mc_gd_gd_mother_id );
-  test &= tuple->column( prefix + "_MC_GD_GD_MOTHER_KEY", mc_gd_gd_mother_key );
+  test &=
+      tuple->column( prefix + "_MC_GD_GD_MOTHER_KEY", mc_gd_gd_mother_key );
 
   return StatusCode( test );
 }
