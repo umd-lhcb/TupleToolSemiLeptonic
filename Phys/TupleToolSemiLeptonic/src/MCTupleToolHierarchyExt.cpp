@@ -1,19 +1,9 @@
-/*****************************************************************************\
-* (c) Copyright 2000-2018 CERN for the benefit of the LHCb Collaboration      *
-*                                                                             *
-* This software is distributed under the terms of the GNU General Public      *
-* Licence version 3 (GPL Version 3), copied verbatim in the file "COPYING".   *
-*                                                                             *
-* In applying this licence, CERN does not waive the privileges and immunities *
-* granted to it by virtue of its status as an Intergovernmental Organization  *
-* or submit itself to any jurisdiction.                                       *
-\*****************************************************************************/
 // Include files
 #include "gsl/gsl_sys.h"
 // from Gaudi
 #include "GaudiKernel/PhysicalConstants.h"
 // local
-#include "MCTupleToolHierarchy.h"
+#include "MCTupleToolHierarchyExt.h"
 
 #include "GaudiAlg/Tuple.h"
 #include "GaudiAlg/TupleObj.h"
@@ -21,33 +11,25 @@
 #include "Event/MCParticle.h"
 #include "Event/Particle.h"
 
+DECLARE_COMPONENT( MCTupleToolHierarchyExt )
+
 using namespace LHCb;
-
-//-----------------------------------------------------------------------------
-// Implementation file for class : EventInfoTupleTool
-//
-// 2008-02-28 : Stephane Poss
-//-----------------------------------------------------------------------------
-
-// Declaration of the Tool Factory
-// actually acts as a using namespace TupleTool
-DECLARE_COMPONENT( MCTupleToolHierarchy )
 
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-MCTupleToolHierarchy::MCTupleToolHierarchy( const std::string& type,
-                                            const std::string& name,
-                                            const IInterface*  parent )
+MCTupleToolHierarchyExt::MCTupleToolHierarchyExt( const std::string& type,
+                                                  const std::string& name,
+                                                  const IInterface*  parent )
     : TupleToolBase( type, name, parent ) {
   declareInterface<IMCParticleTupleTool>( this );
 }
 
 //=============================================================================
-StatusCode MCTupleToolHierarchy::fill( const LHCb::MCParticle*,
-                                       const LHCb::MCParticle* mcp,
-                                       const std::string&      head,
-                                       Tuples::Tuple&          tuple ) {
+StatusCode MCTupleToolHierarchyExt::fill( const LHCb::MCParticle*,
+                                          const LHCb::MCParticle* mcp,
+                                          const std::string&      head,
+                                          Tuples::Tuple&          tuple ) {
   const std::string prefix = fullName( head );
   bool              test   = true;
 
