@@ -49,7 +49,7 @@ StatusCode MCTupleToolHierarchyExt::fill( const LHCb::MCParticle*,
   Gaudi::LorentzVector mc_mother_true_P;
   Gaudi::LorentzVector mc_gd_mother_true_P;
   Gaudi::LorentzVector mc_gd_gd_mother_true_P;
-  Gaudi::LorentzVector mc_nu_true_P;
+  // Gaudi::LorentzVector mc_nu_true_P;
 
   // pointer is ready, prepare the values:
   if ( mcp ) {
@@ -65,18 +65,18 @@ StatusCode MCTupleToolHierarchyExt::fill( const LHCb::MCParticle*,
       const MCParticle* mcpmom_mom( 0 );
       mcpmom_mom = mcpmom->mother();
 
-      if ( mcp->particleID().pid() == 13 || mcp->particleID().pid() == -13 ) {
-        const MCParticle* temp( 0 );
-        for ( int counter = 0;
-              ( mcpmom->endVertices().front() )->products().size();
-              counter++ ) {
-          temp = ( mcpmom->endVertices()[0] )->products()[counter];
-          if ( temp->particleID().pid() == 14 ||
-               temp->particleID().pid() == -14 ) {
-            mc_nu_true_P = temp->momentum();
-          }
-        }
-      }
+      // FIXME: Segfault when enabled.
+      /*
+       *if ( mcp->particleID().pid() == 13 || mcp->particleID().pid() == -13 )
+       *{ const MCParticle* temp( 0 ); for ( int counter = 0; (
+       *mcpmom->endVertices().front() )->products().size(); counter++ ) { temp
+       *= ( mcpmom->endVertices()[0] )->products()[counter]; if (
+       *temp->particleID().pid() == 14 || temp->particleID().pid() == -14 ) {
+       *      mc_nu_true_P = temp->momentum();
+       *    }
+       *  }
+       *}
+       */
 
       if ( mcpmom_mom ) {
         mc_gd_mother_nd = mcpmom_mom->endVertices().front()->products().size();
@@ -133,7 +133,7 @@ StatusCode MCTupleToolHierarchyExt::fill( const LHCb::MCParticle*,
   test &= tuple->column( prefix + "_MC_GD_GD_GD_MOTHER_KEY",
                          mc_gd_gd_gd_mother_key );
 
-  test &= tuple->column( prefix + "_MC_NU_TRUEP", mc_nu_true_P );
+  // test &= tuple->column( prefix + "_MC_NU_TRUEP", mc_nu_true_P );
 
   return StatusCode( test );
 }
