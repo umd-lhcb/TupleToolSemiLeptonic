@@ -13,3 +13,9 @@
   - Added all TupleTools from CERN SemileptonicCommonTools repo.
   - Ported all tools so that they compile with the latest version of DaVinci
     (v45r3).
+
+! 2020-06-05 - Yipeng Sun
+  - v0.2.1
+  - Add `GD_GD_GD_MOTHER` braches for MC.
+  - Note that currently, extraction of true momenta of neutrinos results in
+    segfaults. So this functionality is disabled for now.
