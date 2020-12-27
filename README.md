@@ -1,7 +1,6 @@
 # TupleToolSemiLeptonic
 This project provides several additional classes for the LHCb
-`Analysis/Phys/DecayTreeTuple` package for lepton flavor universality violation
-analysis in the semileptonic channel.
+`Analysis/Phys/DecayTreeTuple` package for some semileptonic analyses.
 
 All rights reserved.
 
@@ -38,17 +37,14 @@ docker run --rm -it -v $(pwd):/data \
     -v $XAUTHORITY:/home/physicist/.Xauthority \
     -e DISPLAY -e UID=$(id -u) -e GID=$(id -g) \
     --net=host \
-    umdlhcb/lhcb-stack-cc7:DaVinci-v45r3
+    umdlhcb/lhcb-stack-cc7:DaVinci-v45r4
 ```
 Note that the `clion` folder stores IDE configuration, and `clion-java` folder
 store the licensing ticket.
 
 
 ## Acknowledgment
-This repository is a superset of `SemileptonicCommonTools` [1], with additional
-tools coming from `B02DplusTauNu` analysis [2]. We made some changes and are
-trying to port them to newest version of `DaVinci`.
-
-
-[1]: https://gitlab.cern.ch/lhcb-slb/SemileptonicCommonTools
-[2]: https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/tree/master/tuple_production/tuple_tools_src
+This repository is a superset of [`SemileptonicCommonTools`](https://gitlab.cern.ch/lhcb-slb/SemileptonicCommonTools), with additional
+tools coming from [`B02DplusTauNu`](https://gitlab.cern.ch/lhcb-slb/B02DplusTauNu/tree/master/tuple_production/tuple_tools_src) analysis.
+We made some changes and ported them to `DaVinci/v45`, the recommended version
+for all run 1 and 2 analyses.
