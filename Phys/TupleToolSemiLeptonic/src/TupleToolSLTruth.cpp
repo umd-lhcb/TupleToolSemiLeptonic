@@ -39,6 +39,7 @@ TupleToolSLTruth::TupleToolSLTruth( const std::string& type,
   m_p2mcAssocTypes.push_back( "DaVinciSmartAssociator" );
   m_p2mcAssocTypes.push_back( "MCMatchObjP2MCRelator" );
   declareProperty( "IP2MCPAssociatorTypes", m_p2mcAssocTypes );
+  declareProperty( "KeepPhotons", m_keepPhotons = false );
 }
 
 //=============================================================================
@@ -304,12 +305,6 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
       // if (abs(mcp->particleID().pid())==511 ||
       // abs(mcp->particleID().pid())==521 || abs(mcp->particleID().pid())==531
       // || abs(mcp->particleID().pid())==5221) {
-      if ( isBeautyHadron( abs( mcp->particleID().pid() ) ) ) {
-        getMCTruePi0s( mcp, &MCTruePi0PX, &MCTruePi0PY, &MCTruePi0PZ,
-                       &MCTruePi0E, &MCTruePi0MID );
-        getMCTrueGammas( mcp, &MCTrueGammaPX, &MCTrueGammaPY, &MCTrueGammaPZ,
-                         &MCTrueGammaE, &MCTrueGammaMID, &MCTrueGammaIsRad );
-      }
 
       // pointer is ready, prepare the values
       // const int mcPid = ( mcp ? mcp->particleID().pid() : 0 );
@@ -474,95 +469,107 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
 
   test &= tuple->column( prefix + "_True_Costhetal", costhetal );
 
-  MCTruePi0Multiplicity   = MCTruePi0E.size();
-  MCTrueGammaMultiplicity = MCTrueGammaE.size();
-  std::vector<double> MCTruePi0PX_copy, MCTruePi0PY_copy, MCTruePi0PZ_copy,
-      MCTruePi0E_copy, MCTrueGammaPX_copy, MCTrueGammaPY_copy,
-      MCTrueGammaPZ_copy, MCTrueGammaE_copy;
-  std::vector<int> MCTruePi0MID_copy, MCTrueGammaMID_copy,
-      MCTrueGammaIsRad_copy;
-  if ( MCTruePi0Multiplicity != 0 ) {
-    for ( int i = 0; i < MCTruePi0Multiplicity; i++ ) {
-      MCTruePi0PX_copy.push_back( MCTruePi0PX[i] );
-      MCTruePi0PY_copy.push_back( MCTruePi0PY[i] );
-      MCTruePi0PZ_copy.push_back( MCTruePi0PZ[i] );
-      MCTruePi0E_copy.push_back( MCTruePi0E[i] );
-      MCTruePi0MID_copy.push_back( MCTruePi0MID[i] );
-    }
-  } else {
-    MCTruePi0PX_copy  = { 0 };
-    MCTruePi0PY_copy  = { 0 };
-    MCTruePi0PZ_copy  = { 0 };
-    MCTruePi0E_copy   = { 0 };
-    MCTruePi0MID_copy = { 0 };
-  }
-  if ( MCTrueGammaMultiplicity != 0 ) {
-    for ( int i = 0; i < MCTrueGammaMultiplicity; i++ ) {
-      MCTrueGammaPX_copy.push_back( MCTrueGammaPX[i] );
-      MCTrueGammaPY_copy.push_back( MCTrueGammaPY[i] );
-      MCTrueGammaPZ_copy.push_back( MCTrueGammaPZ[i] );
-      MCTrueGammaE_copy.push_back( MCTrueGammaE[i] );
-      MCTrueGammaMID_copy.push_back( MCTrueGammaMID[i] );
-      MCTrueGammaIsRad_copy.push_back( MCTrueGammaIsRad[i] );
-      MCTrueCombGammaPX += MCTrueGammaPX[i];
-      MCTrueCombGammaPY += MCTrueGammaPY[i];
-      MCTrueCombGammaPZ += MCTrueGammaPZ[i];
-      MCTrueCombGammaE += MCTrueGammaE[i];
-    }
-  } else {
-    MCTrueGammaPX_copy    = { 0 };
-    MCTrueGammaPY_copy    = { 0 };
-    MCTrueGammaPZ_copy    = { 0 };
-    MCTrueGammaE_copy     = { 0 };
-    MCTrueGammaMID_copy   = { 0 };
-    MCTrueGammaIsRad_copy = { 0 };
-  }
-  MCTrueCombGammaPT = TMath::Sqrt( MCTrueCombGammaPX * MCTrueCombGammaPX +
-                                   MCTrueCombGammaPY * MCTrueCombGammaPY );
+  if ( m_keepPhotons && isBeautyHadron( abs( mcp->particleID().pid() ) ) ) {
+    getMCTruePi0s( mcp, &MCTruePi0PX, &MCTruePi0PY, &MCTruePi0PZ, &MCTruePi0E,
+                   &MCTruePi0MID );
+    getMCTrueGammas( mcp, &MCTrueGammaPX, &MCTrueGammaPY, &MCTrueGammaPZ,
+                     &MCTrueGammaE, &MCTrueGammaMID, &MCTrueGammaIsRad );
 
-  const int max_neutral_candidates = 1000;
+    MCTruePi0Multiplicity   = MCTruePi0E.size();
+    MCTrueGammaMultiplicity = MCTrueGammaE.size();
+    std::vector<double> MCTruePi0PX_copy, MCTruePi0PY_copy, MCTruePi0PZ_copy,
+        MCTruePi0E_copy, MCTrueGammaPX_copy, MCTrueGammaPY_copy,
+        MCTrueGammaPZ_copy, MCTrueGammaE_copy;
+    std::vector<int> MCTruePi0MID_copy, MCTrueGammaMID_copy,
+        MCTrueGammaIsRad_copy;
+    if ( MCTruePi0Multiplicity != 0 ) {
+      for ( int i = 0; i < MCTruePi0Multiplicity; i++ ) {
+        MCTruePi0PX_copy.push_back( MCTruePi0PX[i] );
+        MCTruePi0PY_copy.push_back( MCTruePi0PY[i] );
+        MCTruePi0PZ_copy.push_back( MCTruePi0PZ[i] );
+        MCTruePi0E_copy.push_back( MCTruePi0E[i] );
+        MCTruePi0MID_copy.push_back( MCTruePi0MID[i] );
+      }
+    } else {
+      MCTruePi0PX_copy  = { 0 };
+      MCTruePi0PY_copy  = { 0 };
+      MCTruePi0PZ_copy  = { 0 };
+      MCTruePi0E_copy   = { 0 };
+      MCTruePi0MID_copy = { 0 };
+    }
+    if ( MCTrueGammaMultiplicity != 0 ) {
+      for ( int i = 0; i < MCTrueGammaMultiplicity; i++ ) {
+        MCTrueGammaPX_copy.push_back( MCTrueGammaPX[i] );
+        MCTrueGammaPY_copy.push_back( MCTrueGammaPY[i] );
+        MCTrueGammaPZ_copy.push_back( MCTrueGammaPZ[i] );
+        MCTrueGammaE_copy.push_back( MCTrueGammaE[i] );
+        MCTrueGammaMID_copy.push_back( MCTrueGammaMID[i] );
+        MCTrueGammaIsRad_copy.push_back( MCTrueGammaIsRad[i] );
+        MCTrueCombGammaPX += MCTrueGammaPX[i];
+        MCTrueCombGammaPY += MCTrueGammaPY[i];
+        MCTrueCombGammaPZ += MCTrueGammaPZ[i];
+        MCTrueCombGammaE += MCTrueGammaE[i];
+      }
+    } else {
+      MCTrueGammaPX_copy    = { 0 };
+      MCTrueGammaPY_copy    = { 0 };
+      MCTrueGammaPZ_copy    = { 0 };
+      MCTrueGammaE_copy     = { 0 };
+      MCTrueGammaMID_copy   = { 0 };
+      MCTrueGammaIsRad_copy = { 0 };
+    }
+    MCTrueCombGammaPT = TMath::Sqrt( MCTrueCombGammaPX * MCTrueCombGammaPX +
+                                     MCTrueCombGammaPY * MCTrueCombGammaPY );
 
-  test &= tuple->column( prefix + "_MCTrue_pi0_mult", MCTruePi0Multiplicity );
-  test &= tuple->farray( prefix + "_MCTrue_pi0_PX", MCTruePi0PX_copy,
-                         prefix + "_MCTrue_pi0_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray( prefix + "_MCTrue_pi0_PY", MCTruePi0PY_copy,
-                         prefix + "_MCTrue_pi0_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray( prefix + "_MCTrue_pi0_PZ", MCTruePi0PZ_copy,
-                         prefix + "_MCTrue_pi0_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray( prefix + "_MCTrue_pi0_E", MCTruePi0E_copy,
-                         prefix + "_MCTrue_pi0_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray( prefix + "_MCTrue_pi0_mother_ID", MCTruePi0MID_copy,
-                         prefix + "_MCTrue_pi0_ArrayLength",
-                         max_neutral_candidates );
-  test &=
-      tuple->column( prefix + "_MCTrue_gamma_mult", MCTrueGammaMultiplicity );
-  test &= tuple->farray( prefix + "_MCTrue_gamma_PX", MCTrueGammaPX_copy,
-                         prefix + "_MCTrue_gamma_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray( prefix + "_MCTrue_gamma_PY", MCTrueGammaPY_copy,
-                         prefix + "_MCTrue_gamma_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray( prefix + "_MCTrue_gamma_PZ", MCTrueGammaPZ_copy,
-                         prefix + "_MCTrue_gamma_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray( prefix + "_MCTrue_gamma_E", MCTrueGammaE_copy,
-                         prefix + "_MCTrue_gamma_ArrayLength",
-                         max_neutral_candidates );
-  test &= tuple->farray(
-      prefix + "_MCTrue_gamma_mother_ID", MCTrueGammaMID_copy,
-      prefix + "_MCTrue_gamma_ArrayLength", max_neutral_candidates );
-  test &= tuple->farray(
-      prefix + "_MCTrue_gamma_is_radiative", MCTrueGammaIsRad_copy,
-      prefix + "_MCTrue_gamma_ArrayLength", max_neutral_candidates );
-  test &= tuple->column( prefix + "_MCTrue_combgamma_PX", MCTrueCombGammaPX );
-  test &= tuple->column( prefix + "_MCTrue_combgamma_PY", MCTrueCombGammaPY );
-  test &= tuple->column( prefix + "_MCTrue_combgamma_PZ", MCTrueCombGammaPZ );
-  test &= tuple->column( prefix + "_MCTrue_combgamma_PT", MCTrueCombGammaPT );
-  test &= tuple->column( prefix + "_MCTrue_combgamma_E", MCTrueCombGammaE );
+    const int max_neutral_candidates = 1000;
+
+    test &=
+        tuple->column( prefix + "_MCTrue_pi0_mult", MCTruePi0Multiplicity );
+    test &= tuple->farray( prefix + "_MCTrue_pi0_PX", MCTruePi0PX_copy,
+                           prefix + "_MCTrue_pi0_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray( prefix + "_MCTrue_pi0_PY", MCTruePi0PY_copy,
+                           prefix + "_MCTrue_pi0_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray( prefix + "_MCTrue_pi0_PZ", MCTruePi0PZ_copy,
+                           prefix + "_MCTrue_pi0_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray( prefix + "_MCTrue_pi0_E", MCTruePi0E_copy,
+                           prefix + "_MCTrue_pi0_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray( prefix + "_MCTrue_pi0_mother_ID", MCTruePi0MID_copy,
+                           prefix + "_MCTrue_pi0_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->column( prefix + "_MCTrue_gamma_mult",
+                           MCTrueGammaMultiplicity );
+    test &= tuple->farray( prefix + "_MCTrue_gamma_PX", MCTrueGammaPX_copy,
+                           prefix + "_MCTrue_gamma_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray( prefix + "_MCTrue_gamma_PY", MCTrueGammaPY_copy,
+                           prefix + "_MCTrue_gamma_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray( prefix + "_MCTrue_gamma_PZ", MCTrueGammaPZ_copy,
+                           prefix + "_MCTrue_gamma_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray( prefix + "_MCTrue_gamma_E", MCTrueGammaE_copy,
+                           prefix + "_MCTrue_gamma_ArrayLength",
+                           max_neutral_candidates );
+    test &= tuple->farray(
+        prefix + "_MCTrue_gamma_mother_ID", MCTrueGammaMID_copy,
+        prefix + "_MCTrue_gamma_ArrayLength", max_neutral_candidates );
+    test &= tuple->farray(
+        prefix + "_MCTrue_gamma_is_radiative", MCTrueGammaIsRad_copy,
+        prefix + "_MCTrue_gamma_ArrayLength", max_neutral_candidates );
+    test &=
+        tuple->column( prefix + "_MCTrue_combgamma_PX", MCTrueCombGammaPX );
+    test &=
+        tuple->column( prefix + "_MCTrue_combgamma_PY", MCTrueCombGammaPY );
+    test &=
+        tuple->column( prefix + "_MCTrue_combgamma_PZ", MCTrueCombGammaPZ );
+    test &=
+        tuple->column( prefix + "_MCTrue_combgamma_PT", MCTrueCombGammaPT );
+    test &= tuple->column( prefix + "_MCTrue_combgamma_E", MCTrueCombGammaE );
+  }
 
   if ( mcp ) {
     if ( !mcp->endVertices().empty() ) {
