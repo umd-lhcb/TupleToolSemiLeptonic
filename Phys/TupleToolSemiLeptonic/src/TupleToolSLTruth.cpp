@@ -397,8 +397,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
       }
 
       mothervector                     = mcp->momentum();
-      Gaudi::LorentzVector lepnuvector = leptonvector + neutrinovector;
-      // Gaudi::LorentzVector sumvec = lepnuvector+charmvector;
+      lepnuvector                      = leptonvector + neutrinovector;
       Gaudi::XYZVector     boostvector = lepnuvector.BoostToCM();
       Gaudi::LorentzVector restmother  = boostvec(
           mothervector, boostvector.X(), boostvector.Y(), boostvector.Z() );
