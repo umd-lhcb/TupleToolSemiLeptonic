@@ -290,14 +290,19 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
 
   int                 MCTruePi0Multiplicity   = 0;
   int                 MCTrueGammaMultiplicity = 0;
+  double              MCTrueCombGammaPX       = 0.;
+  double              MCTrueCombGammaPY       = 0.;
+  double              MCTrueCombGammaPZ       = 0.;
+  double              MCTrueCombGammaE        = 0.;
+  double              MCTrueCombGammaPT       = 0.;
   std::vector<double> MCTruePi0PX, MCTruePi0PY, MCTruePi0PZ, MCTruePi0E,
       MCTrueGammaPX, MCTrueGammaPY, MCTrueGammaPZ, MCTrueGammaE;
-  std::vector<int> MCTruePi0MID, MCTrueGammaMID, MCTrueGammaIsRad;
-  double           MCTrueCombGammaPX = 0.;
-  double           MCTrueCombGammaPY = 0.;
-  double           MCTrueCombGammaPZ = 0.;
-  double           MCTrueCombGammaE  = 0.;
-  double           MCTrueCombGammaPT = 0.;
+  std::vector<int>    MCTruePi0MID, MCTrueGammaMID, MCTrueGammaIsRad;
+  std::vector<double> MCTruePi0PX_copy, MCTruePi0PY_copy, MCTruePi0PZ_copy,
+      MCTruePi0E_copy, MCTrueGammaPX_copy, MCTrueGammaPY_copy,
+      MCTrueGammaPZ_copy, MCTrueGammaE_copy;
+  std::vector<int> MCTruePi0MID_copy, MCTrueGammaMID_copy,
+      MCTrueGammaIsRad_copy;
 
   const LHCb::MCParticle* mcp = getMCParticle( P );
   if ( mcp ) {
@@ -469,7 +474,8 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
 
   test &= tuple->column( prefix + "_True_Costhetal", costhetal );
 
-  if ( m_keepPhotons && isBeautyHadron( abs( mcp->particleID().pid() ) ) ) {
+  if ( mcp && m_keepPhotons &&
+       isBeautyHadron( abs( mcp->particleID().pid() ) ) ) {
     getMCTruePi0s( mcp, &MCTruePi0PX, &MCTruePi0PY, &MCTruePi0PZ, &MCTruePi0E,
                    &MCTruePi0MID );
     getMCTrueGammas( mcp, &MCTrueGammaPX, &MCTrueGammaPY, &MCTrueGammaPZ,
@@ -477,11 +483,6 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
 
     MCTruePi0Multiplicity   = MCTruePi0E.size();
     MCTrueGammaMultiplicity = MCTrueGammaE.size();
-    std::vector<double> MCTruePi0PX_copy, MCTruePi0PY_copy, MCTruePi0PZ_copy,
-        MCTruePi0E_copy, MCTrueGammaPX_copy, MCTrueGammaPY_copy,
-        MCTrueGammaPZ_copy, MCTrueGammaE_copy;
-    std::vector<int> MCTruePi0MID_copy, MCTrueGammaMID_copy,
-        MCTrueGammaIsRad_copy;
     if ( MCTruePi0Multiplicity != 0 ) {
       for ( int i = 0; i < MCTruePi0Multiplicity; i++ ) {
         MCTruePi0PX_copy.push_back( MCTruePi0PX[i] );
