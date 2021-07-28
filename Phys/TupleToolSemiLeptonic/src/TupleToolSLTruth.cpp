@@ -271,13 +271,13 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
   bool test      = true;
   int  mother_id = 0;
 
-  Gaudi::LorentzVector neutrinovector( 0, 0, 0, 0 );
-  Gaudi::LorentzVector tauvector( 0, 0, 0, 0 );
-  Gaudi::LorentzVector taunutauvector( 0, 0, 0, 0 );
-  Gaudi::LorentzVector taunumuvector( 0, 0, 0, 0 );
-  Gaudi::LorentzVector muonvector( 0, 0, 0, 0 );
-  Gaudi::LorentzVector munuvector( 0, 0, 0, 0 );
-  // Gaudi::LorentzVector hadronvector(0,0,0,0);
+  Gaudi::LorentzVector              neutrinovector( 0, 0, 0, 0 );
+  Gaudi::LorentzVector              tauvector( 0, 0, 0, 0 );
+  Gaudi::LorentzVector              taunutauvector( 0, 0, 0, 0 );
+  Gaudi::LorentzVector              taunumuvector( 0, 0, 0, 0 );
+  Gaudi::LorentzVector              muonvector( 0, 0, 0, 0 );
+  Gaudi::LorentzVector              leptonvector( 0, 0, 0, 0 );
+  Gaudi::LorentzVector              lepnuvector( 0, 0, 0, 0 );
   std::vector<Gaudi::LorentzVector> hadronvectors_D;
   std::vector<Gaudi::LorentzVector> hadronvectors_D1GD;
   std::vector<Gaudi::LorentzVector> hadronvectors_D2GD;
@@ -334,11 +334,13 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
         if ( ( *itD )->particleID().abspid() == 22 ) continue;
 
         if ( abs( ( *itD )->particleID().pid() ) == 13 ) {
-          muonvector = ( *itD )->momentum();
+          muonvector   = ( *itD )->momentum();
+          leptonvector = ( *itD )->momentum();
         }
         if ( ( abs( ( *itD )->particleID().pid() ) == 15 ) &&
              !( *itD )->endVertices().empty() ) {
-          tauvector = ( *itD )->momentum();
+          tauvector    = ( *itD )->momentum();
+          leptonvector = ( *itD )->momentum();
           const SmartRefVector<LHCb::MCVertex>& TauEndVertices =
               ( *itD )->endVertices();
           SmartRefVector<MCVertex>::const_iterator tauitV =
@@ -392,10 +394,10 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
         }
       }
 
-      mothervector                    = mcp->momentum();
-      Gaudi::LorentzVector munuvector = muonvector + neutrinovector;
-      // Gaudi::LorentzVector sumvec = munuvector+charmvector;
-      Gaudi::XYZVector     boostvector = munuvector.BoostToCM();
+      mothervector                     = mcp->momentum();
+      Gaudi::LorentzVector lepnuvector = leptonvector + neutrinovector;
+      // Gaudi::LorentzVector sumvec = lepnuvector+charmvector;
+      Gaudi::XYZVector     boostvector = lepnuvector.BoostToCM();
       Gaudi::LorentzVector restmother  = boostvec(
           mothervector, boostvector.X(), boostvector.Y(), boostvector.Z() );
       Gaudi::LorentzVector restmuon = boostvec(
@@ -407,7 +409,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
     }
   }
 
-  test &= tuple->column( prefix + "_True_Q2", munuvector.M2() );
+  test &= tuple->column( prefix + "_True_Q2", lepnuvector.M2() );
   test &= tuple->column( prefix + "_TrueNeutrino_P", neutrinovector );
   test &= tuple->column( prefix + "_TrueMu_P", muonvector );
   test &= tuple->column( prefix + "_TrueTau_P", tauvector );
