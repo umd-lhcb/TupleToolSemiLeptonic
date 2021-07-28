@@ -14,8 +14,8 @@ endif()
 #    gaudi_project(this_project this_version
 #                  USE dep_project_1 version_1 [project_2 version_2 ...]
 #                  [DATA pkg1 [VERSION vers1] [pkg2 ...])
-gaudi_project(DaVinciDev  v45r3
-              USE DaVinci v45r3)
+gaudi_project(DaVinciDev  v45r6
+              USE DaVinci v45r6)
 
 # Enable Ganga integration
 include(GangaTools OPTIONAL RESULT_VARIABLE GangaTools_FOUND)
