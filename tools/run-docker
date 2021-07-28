@@ -1,0 +1,9 @@
+#/usr/bin/env bash
+
+docker run --rm -it \
+    -v $(pwd):/data -v $XAUTHORITY:/home/physicist/.Xauthority \
+    -v $HOME/.config/JetBrains:/home/physicist/.config/JetBrains \
+    -v $HOME/.config/JetBrains-shared:/home/physicist/.local/share/JetBrains \
+    -e DISPLAY -e UID=$(id -u) -e GID=$(id -g) \
+    --net=host \
+    umdlhcb/lhcb-stack-cc7:DaVinci-v45r6

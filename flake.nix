@@ -29,7 +29,7 @@
           ];
 
           shellHook = ''
-            export PATH=$(pwd)/test:$(pwd)/tools:$(pwd)/ganga:$(pwd)/scripts:$PATH
+            export PATH=$(pwd)/tools:$PATH
           '';
         };
       });
