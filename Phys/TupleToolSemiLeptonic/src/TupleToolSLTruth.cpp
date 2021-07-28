@@ -350,6 +350,9 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
           SmartRefVector<LHCb::MCParticle>::const_iterator itDtau;
           for ( itDtau = taudaughters.begin(); taudaughters.end() != itDtau;
                 ++itDtau ) {
+            if ( abs( ( *itDtau )->particleID().pid() ) == 13 ) {
+              muonvector = ( *itDtau )->momentum();
+            }
             if ( abs( ( *itDtau )->particleID().pid() ) == 14 ) {
               taunumuvector = ( *itDtau )->momentum();
             }
