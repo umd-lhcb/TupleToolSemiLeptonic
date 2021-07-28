@@ -288,6 +288,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
   std::vector<int>                  hadronids_D3GD;
   Gaudi::LorentzVector              mothervector( 0, 0, 0, 0 );
   double                            costhetal = 10.;
+  bool                              tau_decay = false;
 
   int                 MCTruePi0Multiplicity   = 0;
   int                 MCTrueGammaMultiplicity = 0;
@@ -339,6 +340,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
         }
         if ( ( abs( ( *itD )->particleID().pid() ) == 15 ) &&
              !( *itD )->endVertices().empty() ) {
+          tau_decay    = true;
           tauvector    = ( *itD )->momentum();
           leptonvector = ( *itD )->momentum();
           const SmartRefVector<LHCb::MCVertex>& TauEndVertices =
@@ -410,6 +412,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
   }
 
   test &= tuple->column( prefix + "_True_Q2", lepnuvector.M2() );
+  test &= tuple->column( prefix + "_tau_decay", tau_decay );
   test &= tuple->column( prefix + "_TrueNeutrino_P", neutrinovector );
   test &= tuple->column( prefix + "_TrueMu_P", muonvector );
   test &= tuple->column( prefix + "_TrueTau_P", tauvector );
