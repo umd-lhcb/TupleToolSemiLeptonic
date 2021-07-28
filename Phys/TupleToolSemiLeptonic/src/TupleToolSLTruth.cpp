@@ -268,7 +268,8 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
                                    Tuples::Tuple&        tuple ) {
   const std::string prefix = fullName( head );
 
-  bool test = true;
+  bool test      = true;
+  int  mother_id = 0;
 
   Gaudi::LorentzVector neutrinovector( 0, 0, 0, 0 );
   Gaudi::LorentzVector tauvector( 0, 0, 0, 0 );
@@ -310,6 +311,8 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
       // if (abs(mcp->particleID().pid())==511 ||
       // abs(mcp->particleID().pid())==521 || abs(mcp->particleID().pid())==531
       // || abs(mcp->particleID().pid())==5221) {
+      mother_id = mcp->particleID().pid();
+      test &= tuple->column( prefix + "_TrueHadron_M_ID", mother_id );
 
       // pointer is ready, prepare the values
       // const int mcPid = ( mcp ? mcp->particleID().pid() : 0 );
