@@ -81,11 +81,10 @@ class TupleToolSLTruth : public TupleToolBase,
   std::vector<IParticle2MCAssociator*>       m_p2mcAssocs;
   std::vector<std::string>                   m_p2mcAssocTypes;
   std::vector<std::string>
-       m_toolList;  ///< names of all MCTupleTools, set by the option ToolList
-  bool m_keepPhotons;
+      m_toolList;  ///< names of all MCTupleTools, set by the option ToolList
 
   std::vector<IMCParticleTupleTool*> m_mcTools;  ///< vector of MCTools to fill
-  IParticleDescendants*              m_particleDescendants;
+  IParticleDescendants* m_particleDescendants;
 };
 
 #endif  // TUPLETOOLMCTRUTH_H
