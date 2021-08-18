@@ -95,14 +95,6 @@ StatusCode TupleToolApplyIsolationVetoDst::initialize() {
   m_Reader->AddVariable( "Track_IPCHI2", &chi2 );
   m_Reader->AddVariable( "Track_FLIGHT", &newfdchi2 );
   m_Reader->AddVariable( "Track_DELTAFLIGHT", &deltafd );
-  // dummy variables
-  // m_Reader->AddVariable( "Bplus_PT",&dummy);
-  // m_Reader->AddVariable( "Dst_PT",&Dst_PT);
-  // m_Reader->AddVariable( "Bplus_ENDVERTEX_CHI2",&vertexchi2);
-  // m_Reader->AddVariable( "Dst_ENDVERTEX_CHI2",&dummy);
-  // m_Reader->AddVariable( "Dst_FDCHI2_OWNPV",&dummy);
-  // m_Reader->AddVariable( "log(1-D_DIRA_OWNPV)",&dummy);
-  // m_Reader->AddVariable( "log(1-Bplus_DIRA_OWNPV)",&dummy);
 
   m_Reader->BookMVA( "BDT method", m_weightsName );
   if ( !m_Reader ) {
@@ -444,45 +436,6 @@ void TupleToolApplyIsolationVetoDst::writeParticle(
     const LHCb::Particle* P, double bdt, const std::string& name,
     Tuples::Tuple& tuple, std::string prefix, const LHCb::Particle* Mother ) {
   if ( bdt > -1 ) {
-    float pe     = P->momentum().E();
-    float px     = P->momentum().Px();
-    float py     = P->momentum().Py();
-    float pz     = P->momentum().Pz();
-    float pidk   = P->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
-    float pidp   = P->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
-    float nnp    = P->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
-    float nnk    = P->proto()->info( LHCb::ProtoParticle::ProbNNk, -1 );
-    float nnpi   = P->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1 );
-    float nng    = P->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1 );
-    float charge = 0;
-    if ( P->proto()->track()->type() > 2 ) {
-      charge = P->proto()->track()->charge();
-    }
-    float          type    = P->proto()->track()->type();
-    const MuonPID* muonPID = P->proto()->muonPID();
-    float          ismuon  = muonPID ? muonPID->IsMuon() : false;
-    tuple->column( prefix + "_ISOLATION_BDT" + name + m_outputSuffix, bdt );
-    tuple->column( prefix + "_ISOLATION_Type" + name + m_outputSuffix, type );
-    if ( m_verbose ) {
-      tuple->column( prefix + "_ISOLATION_CHARGE" + name + m_outputSuffix,
-                     charge );
-      tuple->column( prefix + "_ISOLATION_PE" + name + m_outputSuffix, pe );
-      tuple->column( prefix + "_ISOLATION_PX" + name + m_outputSuffix, px );
-      tuple->column( prefix + "_ISOLATION_PY" + name + m_outputSuffix, py );
-      tuple->column( prefix + "_ISOLATION_PZ" + name + m_outputSuffix, pz );
-      tuple->column( prefix + "_ISOLATION_PIDK" + name + m_outputSuffix,
-                     pidk );
-      tuple->column( prefix + "_ISOLATION_PIDp" + name + m_outputSuffix,
-                     pidp );
-      tuple->column( prefix + "_ISOLATION_NNk" + name + m_outputSuffix, nnk );
-      tuple->column( prefix + "_ISOLATION_NNpi" + name + m_outputSuffix,
-                     nnpi );
-      tuple->column( prefix + "_ISOLATION_NNp" + name + m_outputSuffix, nnp );
-      tuple->column( prefix + "_ISOLATION_IsMuon" + name + m_outputSuffix,
-                     ismuon );
-      tuple->column( prefix + "_ISOLATION_NNghost" + name + m_outputSuffix,
-                     nng );
-    }
     if ( m_trueID ) {
       const LHCb::MCParticle* mcp( nullptr );
       const LHCb::MCParticle* mother_mcp( nullptr );
@@ -507,10 +460,6 @@ void TupleToolApplyIsolationVetoDst::writeParticle(
         if ( msgLevel( MSG::VERBOSE ) )
           verbose() << "Got mcp " << mcp << endmsg;
       }
-      float pid = -1;
-      if ( foundMCP ) pid = mcp->particleID().abspid();
-      tuple->column( prefix + "_ISOLATION_TRUEPID" + name + m_outputSuffix,
-                     pid );
       float motherID = -1;
       if ( foundMCP )
         if ( mcp->mother() ) motherID = mcp->mother()->particleID().abspid();
@@ -537,38 +486,7 @@ void TupleToolApplyIsolationVetoDst::writeParticle(
     }
 
   } else {
-    tuple->column( prefix + "_ISOLATION_BDT" + name + m_outputSuffix, bdt );
-    tuple->column( prefix + "_ISOLATION_Type" + name + m_outputSuffix,
-                   (float)0. );
-    if ( m_verbose ) {
-      tuple->column( prefix + "_ISOLATION_CHARGE" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_PE" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_PX" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_PY" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_PZ" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_PIDK" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_PIDp" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_NNk" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_NNpi" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_NNp" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_IsMuon" + name + m_outputSuffix,
-                     (float)0. );
-      tuple->column( prefix + "_ISOLATION_NNghost" + name + m_outputSuffix,
-                     (float)0. );
-    }
     if ( m_trueID ) {
-      tuple->column( prefix + "_ISOLATION_TRUEPID" + name + m_outputSuffix,
-                     (float)-1. );
       tuple->column( prefix + "_ISOLATION_MOTHERID" + name + m_outputSuffix,
                      (float)-1. );
       tuple->column( prefix + "_ISOLATION_SAMEMOTHER" + name + m_outputSuffix,
