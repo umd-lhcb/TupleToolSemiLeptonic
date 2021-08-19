@@ -84,7 +84,7 @@ class TupleToolSLTruth : public TupleToolBase,
       m_toolList;  ///< names of all MCTupleTools, set by the option ToolList
 
   std::vector<IMCParticleTupleTool*> m_mcTools;  ///< vector of MCTools to fill
-  IParticleDescendants* m_particleDescendants;
+  IParticleDescendants*              m_particleDescendants;
 };
 
 #endif  // TUPLETOOLMCTRUTH_H
