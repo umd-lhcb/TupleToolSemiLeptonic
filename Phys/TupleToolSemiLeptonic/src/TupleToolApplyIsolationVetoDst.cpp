@@ -140,7 +140,17 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   for ( auto& bDaughter : bDaughters ) {
     if ( bDaughter->particleID().abspid() == 421 ) theD = bDaughter;
   }
-  if ( !theD ) warning() << "NOT FOUND D0 " << endmsg;
+  if ( !theD ) {
+    warning() << "NOT FOUND D0 " << endmsg;
+    tuple->column( prefix + "_ISOLATION_DstWindowOK", false );
+    tuple->column( prefix + "_ISOLATION_DstWindowBDT", (float)0 );
+    tuple->column( prefix + "_ISOLATION_DstWindowDELTAM", (float)0 );
+    tuple->column( prefix + "_ISOLATION_DstWindowBDT2", (float)0 );
+    tuple->column( prefix + "_ISOLATION_DstWindowDELTAM2", (float)0 );
+    tuple->column( prefix + "_ISOLATION_DstWindowInWindow", (float)0 );
+
+    return StatusCode( 0 );
+  }
   parts2VertexDst.push_back( theD );
   for ( int i = 0; i < m_nWrite; i++ ) {
     maxbdt[i]   = -2;
@@ -316,6 +326,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
     sout.str( "" );
   }
 
+  tuple->column( prefix + "_ISOLATION_DstWindowOK", true );
   tuple->column( prefix + "_ISOLATION_DstWindowBDT", DstBDT1 );
   tuple->column( prefix + "_ISOLATION_DstWindowDELTAM", DstM1 );
   tuple->column( prefix + "_ISOLATION_DstWindowBDT2", DstBDT2 );
