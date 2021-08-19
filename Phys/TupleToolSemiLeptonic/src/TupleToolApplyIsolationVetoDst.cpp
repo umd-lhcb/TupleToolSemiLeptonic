@@ -149,7 +149,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
     tuple->column( prefix + "_ISOLATION_DstWindowDELTAM2", (float)0 );
     tuple->column( prefix + "_ISOLATION_DstWindowInWindow", (float)0 );
 
-    return StatusCode( 0 );
+    return StatusCode( true );
   }
   parts2VertexDst.push_back( theD );
   for ( int i = 0; i < m_nWrite; i++ ) {
