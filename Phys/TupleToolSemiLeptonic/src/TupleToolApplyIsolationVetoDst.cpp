@@ -43,9 +43,9 @@ TupleToolApplyIsolationVetoDst::TupleToolApplyIsolationVetoDst(
       m_pVertexFit( nullptr ) {
   declareInterface<IParticleTupleTool>( this );
 
-  m_inputParticles.emplace_back( "/Event/Phys/StdAllNoPIDsPions/Particles" );
-  m_inputParticles.emplace_back( "/Event/Phys/StdNoPIDsUpPions/Particles" );
-  m_inputParticles.emplace_back( "Phys/StdNoPIDsVeloPions/Particles" );
+  m_inputParticles.emplace_back( "/Event/Phys/StdAllNoPIDsPions" );
+  m_inputParticles.emplace_back( "/Event/Phys/StdNoPIDsUpPions" );
+  m_inputParticles.emplace_back( "Phys/StdNoPIDsVeloPions" );
 
   declareProperty( "VertexFit", m_typeVertexFit = "default" );
   declareProperty( "InputParticles", m_inputParticles );
@@ -53,7 +53,7 @@ TupleToolApplyIsolationVetoDst::TupleToolApplyIsolationVetoDst(
   declareProperty( "WeightsFile", m_weightsName = "weights.xml" );
   declareProperty( "NWrite", m_nWrite = 3 );
   declareProperty( "TrueIDs", m_trueID = false );
-  declareProperty( "Verbose", m_verbose = true );
+  declareProperty( "Verbose", m_verbose = false );
 }
 
 //=============================================================================
@@ -207,14 +207,14 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
 
   for ( auto& m_inputParticle : m_inputParticles ) {
     if ( !exist<LHCb::Particle::Range>( m_inputParticle + "/Particles" ) ) {
-      if ( msgLevel( MSG::DEBUG ) )
+      if ( m_verbose )
         debug() << "No particles at " << m_inputParticle << " !!!!!" << endmsg;
       continue;
     }
 
     LHCb::Particle::Range parts =
         get<LHCb::Particle::Range>( m_inputParticle + "/Particles" );
-    if ( msgLevel( MSG::DEBUG ) )
+    if ( m_verbose )
       debug() << "Getting particles from " << m_inputParticle << " with "
               << ( parts ).size() << " particles" << endmsg;
     for ( auto iparts : ( parts ) ) {
