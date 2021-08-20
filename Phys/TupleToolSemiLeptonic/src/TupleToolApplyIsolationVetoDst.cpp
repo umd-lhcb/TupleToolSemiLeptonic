@@ -208,15 +208,16 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   for ( auto& m_inputParticle : m_inputParticles ) {
     if ( !exist<LHCb::Particle::Range>( m_inputParticle + "/Particles" ) ) {
       if ( m_verbose )
-        debug() << "No particles at " << m_inputParticle << " !!!!!" << endmsg;
+        warning() << "No particles at " << m_inputParticle << " !!!!!"
+                  << endmsg;
       continue;
     }
 
     LHCb::Particle::Range parts =
         get<LHCb::Particle::Range>( m_inputParticle + "/Particles" );
     if ( m_verbose )
-      debug() << "Getting particles from " << m_inputParticle << " with "
-              << ( parts ).size() << " particles" << endmsg;
+      warning() << "Getting particles from " << m_inputParticle << " with "
+                << ( parts ).size() << " particles" << endmsg;
     for ( auto iparts : ( parts ) ) {
       const LHCb::Particle* part = iparts;
 
