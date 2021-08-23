@@ -199,12 +199,17 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   LHCb::Particle::ConstVector theParts;
   LHCb::Vertex                DstVertex;
 
-  float DstBDT1 = -2;
-  float DstBDT2 = -2;
-  float DstM1   = -1;
-  float DstM2   = -1;
-  int   nWindow = 0;
-  bool  DstOK   = false;
+  float DstBDT1         = -2;
+  float DstBDT2         = -2;
+  float DstM1           = -1;
+  float DstM2           = -1;
+  int   nWindow         = 0;
+  bool  DstOK           = false;
+  bool  DstGhostOK      = false;
+  bool  DstType3OK      = false;
+  bool  DstType4OK      = false;
+  bool  DstType1OK      = false;
+  bool  deltaMassWindow = false;
 
   for ( auto& m_inputParticle : m_inputParticles ) {
     if ( !exist<LHCb::Particle::Range>( m_inputParticle + "/Particles" ) ) {
@@ -228,15 +233,19 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
         if ( ghostprob > 0.5 ) {
           continue;
         }
+        DstGhostOK = true;
         if ( part->proto()->track()->type() == 3 && opening <= 0.994 ) {
           continue;
         }
+        DstType3OK = true;
         if ( part->proto()->track()->type() == 4 && opening <= 0.98 ) {
           continue;
         }
+        DstType4OK = true;
         if ( part->proto()->track()->type() == 1 && opening <= 0.98 ) {
           continue;
         }
+        DstType1OK = true;
 
         LHCb::Vertex vtxWithExtraTrack;
         parts2Vertex.push_back( iparts );
@@ -269,7 +278,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
           deltaMass = newP->momentum().M() - theD->momentum().M();
         }
 
-        bool deltaMassWindow = ( deltaMass > 140 && deltaMass < 160 );
+        deltaMassWindow = ( deltaMass > 140 && deltaMass < 160 );
         if ( deltaMassWindow ) {
           double     tmpip, tmpchi2;
           StatusCode dump =
@@ -335,6 +344,13 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_DstWindowBDT2", DstBDT2 );
   tuple->column( prefix + "_ISOLATION_DstWindowDELTAM2", DstM2 );
   tuple->column( prefix + "_ISOLATION_DstWindowInWindow", nWindow );
+  if ( m_verbose ) {
+    tuple->column( prefix + "_ISOLATION_DstDeltaMassWindow", deltaMassWindow );
+    tuple->column( prefix + "_ISOLATION_DstGhostOK", DstGhostOK );
+    tuple->column( prefix + "_ISOLATION_DstType3OK", DstType3OK );
+    tuple->column( prefix + "_ISOLATION_DstType4OK", DstType4OK );
+    tuple->column( prefix + "_ISOLATION_DstType1OK", DstType1OK );
+  }
 
   return StatusCode( test );
 }
