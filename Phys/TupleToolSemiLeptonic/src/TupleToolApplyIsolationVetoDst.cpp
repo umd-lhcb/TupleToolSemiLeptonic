@@ -43,8 +43,8 @@ TupleToolApplyIsolationVetoDst::TupleToolApplyIsolationVetoDst(
       m_pVertexFit( nullptr ) {
   declareInterface<IParticleTupleTool>( this );
 
-  m_inputParticles.emplace_back( "/Event/Phys/StdAllNoPIDsPions" );
-  m_inputParticles.emplace_back( "/Event/Phys/StdNoPIDsUpPions" );
+  m_inputParticles.emplace_back( "Phys/StdAllNoPIDsPions" );
+  m_inputParticles.emplace_back( "Phys/StdNoPIDsUpPions" );
   m_inputParticles.emplace_back( "Phys/StdNoPIDsVeloPions" );
 
   declareProperty( "VertexFit", m_typeVertexFit = "default" );
