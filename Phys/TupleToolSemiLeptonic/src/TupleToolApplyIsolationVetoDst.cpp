@@ -204,6 +204,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   float DstM1   = -1;
   float DstM2   = -1;
   int   nWindow = 0;
+  bool  DstOK   = false;
 
   for ( auto& m_inputParticle : m_inputParticles ) {
     if ( !exist<LHCb::Particle::Range>( m_inputParticle + "/Particles" ) ) {
@@ -279,6 +280,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
           nWindow++;
           dummy        = 4000;
           float bdtval = m_Reader->EvaluateMVA( "BDT method" );
+          DstOK        = true;
           if ( bdtval > DstBDT1 ) {
             DstBDT2 = DstBDT1;
             DstM2   = DstM1;
@@ -327,7 +329,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
     sout.str( "" );
   }
 
-  tuple->column( prefix + "_ISOLATION_DstWindowOK", true );
+  tuple->column( prefix + "_ISOLATION_DstWindowOK", DstOK );
   tuple->column( prefix + "_ISOLATION_DstWindowBDT", DstBDT1 );
   tuple->column( prefix + "_ISOLATION_DstWindowDELTAM", DstM1 );
   tuple->column( prefix + "_ISOLATION_DstWindowBDT2", DstBDT2 );
