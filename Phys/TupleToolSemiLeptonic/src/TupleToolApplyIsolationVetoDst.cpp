@@ -227,6 +227,8 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
     for ( auto iparts : ( parts ) ) {
       const LHCb::Particle* part = iparts;
 
+      if ( m_verbose ) warning() << "Opening Cos is: " << opening << endmsg;
+
       if ( part->proto()->track()->type() < 5 &&
            !isTrackInDecay( part->proto()->track(), daughtertracks ) ) {
         ghostprob = part->proto()->track()->ghostProbability();
@@ -253,7 +255,9 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
         StatusCode sc3 = m_pVertexFit->fit( vtxWithExtraTrack, parts2Vertex );
         parts2Vertex.pop_back();
 
-        opening   = getopening( part->proto()->track(), P );
+        opening = getopening( part->proto()->track(), P );
+        if ( m_verbose ) warning() << "Opening Cos is: " << opening << endmsg;
+
         minipchi2 = getminipchi( part );
         newfdchi2 = getfdchi2( part->proto()->track(), vtxWithExtraTrack );
         oldfdchi2 = getfdchi2( part->proto()->track(), v );
