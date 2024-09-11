@@ -27,7 +27,44 @@ make configure && make
 ```
 
 
-## Development
+## Local development
+
+If you want to modify this `TupleTool` and run a local ntupling job with `lhcb-ntuples-gen` you will need to
+set up a new `DaVinci` inside `docker` with all the dependencies we use in our reco script. The workflow would be
+```shell
+cd lhcb-ntuples-gen
+make docker-dv ## Enter Docker
+export DAVINCI_VERSION=v45r6
+export PHYS_VERSION=v26r6
+export TUPLETOOL_SL_VERSION=0.2.4
+export TRACKER_ONLY_EMU_VERSION=0.2.2
+
+# Setup a DaVinci dev
+source /usr/local/bin/envset.sh
+git config --global user.name "Physicist"
+git config --global user.email "lhcb@physics.umd.edu"
+lb-dev DaVinci/${DAVINCI_VERSION}
+git clone https://github.com/umd-lhcb/TrackerOnlyEmu.git --branch ${TRACKER_ONLY_EMU_VERSION} --depth 1
+cd DaVinciDev_${DAVINCI_VERSION}
+git lb-use Phys
+git lb-checkout Phys/${PHYS_VERSION} Phys/LoKiPhys
+git lb-checkout Phys/${PHYS_VERSION} Phys/DaVinciTypes
+git lb-checkout Phys/${PHYS_VERSION} Phys/RelatedInfoTools
+git lb-use TupleToolSemiLeptonic https://github.com/umd-lhcb/TupleToolSemiLeptonic.git
+git lb-checkout TupleToolSemiLeptonic/${TUPLETOOL_SL_VERSION} Phys/TupleToolSemiLeptonic
+cp -r ../TrackerOnlyEmu/davinci/* .
+
+## Now you can edit the source code in lhcb-ntuples-gen/DaVinciDev_v45r6/Phys/TupleToolSemiLeptonic/src
+
+# Compile DaVinci
+make configure && make
+
+# Run ntupling job
+cd ../run2-rdx
+..//DaVinciDev_v45r6/run gaudirun.py conds/cond-std-2016.py ./reco_Dst_D0.py
+```
+If you `git annex get` the required `.DST` files, this will produce a sample `std.root` in the `run2-rdx` folder.
+
 It is highly recommended to use a docker with `DaVinci` and `CLion` shipped. It
 has smart auto-completion and detects errors on-the-fly. To use the docker:
 ```
