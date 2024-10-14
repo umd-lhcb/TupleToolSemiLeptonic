@@ -280,10 +280,12 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
   std::vector<Gaudi::LorentzVector> hadronvectors_D1GD;
   std::vector<Gaudi::LorentzVector> hadronvectors_D2GD;
   std::vector<Gaudi::LorentzVector> hadronvectors_D3GD;
+  std::vector<Gaudi::LorentzVector> hadronvectors_D4GD;
   std::vector<int>                  hadronids_D;
   std::vector<int>                  hadronids_D1GD;
   std::vector<int>                  hadronids_D2GD;
   std::vector<int>                  hadronids_D3GD;
+  std::vector<int>                  hadronids_D4GD;
   Gaudi::LorentzVector              mothervector( 0, 0, 0, 0 );
   double                            costhetal = 10.;
   bool                              is_tau    = false;
@@ -384,6 +386,9 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
               } else if ( D_counter == 2 ) {
                 hadronvectors_D3GD.push_back( ( *itGD )->momentum() );
                 hadronids_D3GD.push_back( ( *itGD )->particleID().pid() );
+              } else if ( D_counter == 3 ) {
+                hadronvectors_D4GD.push_back( ( *itGD )->momentum() );
+                hadronids_D4GD.push_back( ( *itGD )->particleID().pid() );
               }
             }
             D_counter += 1;
@@ -417,7 +422,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
   test &= tuple->column( prefix + "_TrueTauNuMu_P", taunumuvector );
   test &= tuple->column( prefix + "_TrueTauNuTau_P", taunutauvector );
 
-  for ( unsigned int i = 0; i < 3; i++ ) {
+  for ( unsigned int i = 0; i < 4; i++ ) {
     std::stringstream sout;
     sout << i;
     if ( hadronvectors_D.size() > i ) {
@@ -432,7 +437,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
           tuple->column( prefix + "_TrueHadron_D" + sout.str() + "_ID", 0 );
     }
   }
-  for ( unsigned int j = 0; j < 3; j++ ) {
+  for ( unsigned int j = 0; j < 4; j++ ) {
     std::stringstream sout1;
     sout1 << j;
     if ( hadronvectors_D1GD.size() > j ) {
@@ -448,7 +453,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
           prefix + "_TrueHadron_D0_GD" + sout1.str() + "_ID", 0 );
     }
   }
-  for ( unsigned int j = 0; j < 3; j++ ) {
+  for ( unsigned int j = 0; j < 4; j++ ) {
     std::stringstream sout2;
     sout2 << j;
     if ( hadronvectors_D2GD.size() > j ) {
@@ -464,7 +469,7 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
           prefix + "_TrueHadron_D1_GD" + sout2.str() + "_ID", 0 );
     }
   }
-  for ( unsigned int j = 0; j < 3; j++ ) {
+  for ( unsigned int j = 0; j < 4; j++ ) {
     std::stringstream sout3;
     sout3 << j;
     if ( hadronvectors_D3GD.size() > j ) {
@@ -478,6 +483,22 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
                              Gaudi::LorentzVector( 0, 0, 0, 0 ) );
       test &= tuple->column(
           prefix + "_TrueHadron_D2_GD" + sout3.str() + "_ID", 0 );
+    }
+  }
+  for ( unsigned int j = 0; j < 4; j++ ) {
+    std::stringstream sout4;
+    sout4 << j;
+    if ( hadronvectors_D4GD.size() > j ) {
+      test &= tuple->column( prefix + "_TrueHadron_D3_GD" + sout4.str() + "_P",
+                             hadronvectors_D4GD[j] );
+      test &=
+          tuple->column( prefix + "_TrueHadron_D3_GD" + sout4.str() + "_ID",
+                         hadronids_D4GD[j] );
+    } else {
+      test &= tuple->column( prefix + "_TrueHadron_D3_GD" + sout4.str() + "_P",
+                             Gaudi::LorentzVector( 0, 0, 0, 0 ) );
+      test &= tuple->column(
+          prefix + "_TrueHadron_D3_GD" + sout4.str() + "_ID", 0 );
     }
   }
 

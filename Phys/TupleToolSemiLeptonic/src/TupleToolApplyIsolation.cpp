@@ -127,6 +127,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   float nnpi   = 0;
   float nnp    = 0;
   float nng    = 0;
+  float gprob  = 0;
   float ismuon = 0;
 
   std::vector<const LHCb::Track*> daughtertracks;
@@ -138,24 +139,28 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   LHCb::Particle::ConstVector parts2Vertex;
   LHCb::Particle::ConstVector parts2VertexD;
 
-  double                angle, angle2, angle3, angle4;
+  double                angle, angle2, angle3, angle4, angle5;
   double                maxchi2 = -99;
   double                mchi22  = -99;
   double                mchi23  = -99;
   double                mchi24  = -99;
+  double                mchi25  = -99;
   double                maxbdt  = -2;
   double                bdt2    = -2;
   double                bdt3    = -2;
   double                bdt4    = -2;
+  double                bdt5    = -2;
   int                   trueID  = 0;
   int                   _sc     = -999;
   int                   _sc2    = -999;
   int                   _sc3    = -999;
   int                   _sc4    = -999;
+  int                   _sc5    = -999;
   const LHCb::Particle* maxpart;
   const LHCb::Particle* part2;
   const LHCb::Particle* part3;
   const LHCb::Particle* part4;
+  const LHCb::Particle* part5;
 
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
@@ -265,59 +270,85 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
           dummy        = 4000;
           float bdtval = m_Reader->EvaluateMVA( "BDT method" );
           if ( bdtval > maxbdt ) {
+            bdt5    = bdt4;
             bdt4    = bdt3;
             bdt3    = bdt2;
             bdt2    = maxbdt;
             maxbdt  = bdtval;
+            part5   = part4;
             part4   = part3;
             part3   = part2;
             part2   = maxpart;
             maxpart = part;
+            mchi25  = mchi24;
             mchi24  = mchi23;
             mchi23  = mchi22;
             mchi22  = maxchi2;
             maxchi2 = tmpchi2;
+            _sc5    = _sc4;
             _sc4    = _sc3;
             _sc3    = _sc2;
             _sc2    = _sc;
             _sc     = sc3.getCode();
+            angle5  = angle4;
             angle4  = angle3;
             angle3  = angle2;
             angle2  = angle;
             angle   = opening;
           } else if ( bdtval > bdt2 ) {
+            bdt5   = bdt4;
             bdt4   = bdt3;
             bdt3   = bdt2;
             bdt2   = bdtval;
+            part5  = part4;
             part4  = part3;
             part3  = part2;
             part2  = part;
+            mchi25 = mchi24;
             mchi24 = mchi23;
             mchi23 = mchi22;
             mchi22 = tmpchi2;
+            _sc5   = _sc4;
             _sc4   = _sc3;
             _sc3   = _sc2;
             _sc2   = sc3.getCode();
+            angle5 = angle4;
             angle4 = angle3;
             angle3 = angle2;
             angle2 = opening;
           } else if ( bdtval > bdt3 ) {
+            bdt5   = bdt4;
             bdt4   = bdt3;
             bdt3   = bdtval;
+            part5  = part4;
             part4  = part3;
             part3  = part;
+            mchi25 = mchi24;
             mchi24 = mchi23;
             mchi23 = tmpchi2;
+            _sc5   = _sc4;
             _sc4   = _sc3;
             _sc3   = sc3.getCode();
+            angle5 = angle4;
             angle4 = angle3;
             angle3 = opening;
           } else if ( bdtval > bdt3 ) {
+            bdt5   = bdt4;
             bdt4   = bdtval;
+            part5  = part4;
             part4  = part;
+            mchi25 = mchi24;
             mchi24 = tmpchi2;
+            _sc5   = _sc4;
             _sc4   = sc3.getCode();
+            angle5 = angle4;
             angle4 = opening;
+          } else if ( bdtval > bdt4 ) {
+            bdt5   = bdtval;
+            part5  = part;
+            mchi25 = tmpchi2;
+            _sc5   = sc3.getCode();
+            angle5 = opening;
           }
         }
       }
@@ -325,16 +356,17 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   }    // end particle types loop
 
   if ( maxbdt > -1 ) {
-    pe   = maxpart->momentum().E();
-    px   = maxpart->momentum().Px();
-    py   = maxpart->momentum().Py();
-    pz   = maxpart->momentum().Pz();
-    pidk = maxpart->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
-    pidp = maxpart->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
-    nnp  = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
-    nnk  = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNk, -1 );
-    nnpi = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1 );
-    nng  = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1 );
+    pe    = maxpart->momentum().E();
+    px    = maxpart->momentum().Px();
+    py    = maxpart->momentum().Py();
+    pz    = maxpart->momentum().Pz();
+    pidk  = maxpart->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
+    pidp  = maxpart->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
+    nnp   = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
+    nnk   = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNk, -1 );
+    nnpi  = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1 );
+    nng   = maxpart->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1 );
+    gprob = maxpart->proto()->track()->ghostProbability();
     if ( maxpart->proto()->track()->type() == 1 ) {
       charge = 0;
     } else {
@@ -369,19 +401,21 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_NNp" + m_outputSuffix, nnp );
   tuple->column( prefix + "_ISOLATION_IsMuon" + m_outputSuffix, ismuon );
   tuple->column( prefix + "_ISOLATION_NNghost" + m_outputSuffix, nng );
+  tuple->column( prefix + "_ISOLATION_GhostProb" + m_outputSuffix, gprob );
   tuple->column( prefix + "_ISOLATION_TRUEID" + m_outputSuffix, trueID );
 
   if ( bdt2 > -1 ) {
-    pe   = part2->momentum().E();
-    px   = part2->momentum().Px();
-    py   = part2->momentum().Py();
-    pz   = part2->momentum().Pz();
-    pidk = part2->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
-    pidp = part2->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
-    nnp  = part2->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
-    nnk  = part2->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
-    nnpi = part2->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
-    nng  = part2->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    pe    = part2->momentum().E();
+    px    = part2->momentum().Px();
+    py    = part2->momentum().Py();
+    pz    = part2->momentum().Pz();
+    pidk  = part2->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
+    pidp  = part2->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
+    nnp   = part2->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
+    nnk   = part2->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
+    nnpi  = part2->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
+    nng   = part2->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    gprob = part2->proto()->track()->ghostProbability();
     if ( part2->proto()->track()->type() == 1 ) {
       charge = 0;
     } else {
@@ -416,19 +450,21 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_NNp2" + m_outputSuffix, nnp );
   tuple->column( prefix + "_ISOLATION_IsMuon2" + m_outputSuffix, ismuon );
   tuple->column( prefix + "_ISOLATION_NNghost2" + m_outputSuffix, nng );
+  tuple->column( prefix + "_ISOLATION_GhostProb2" + m_outputSuffix, gprob );
   tuple->column( prefix + "_ISOLATION_TRUEID2" + m_outputSuffix, trueID );
 
   if ( bdt3 > -1 ) {
-    pe   = part3->momentum().E();
-    px   = part3->momentum().Px();
-    py   = part3->momentum().Py();
-    pz   = part3->momentum().Pz();
-    pidk = part3->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
-    pidp = part3->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
-    nnp  = part3->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
-    nnk  = part3->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
-    nnpi = part3->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
-    nng  = part3->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    pe    = part3->momentum().E();
+    px    = part3->momentum().Px();
+    py    = part3->momentum().Py();
+    pz    = part3->momentum().Pz();
+    pidk  = part3->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
+    pidp  = part3->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
+    nnp   = part3->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
+    nnk   = part3->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
+    nnpi  = part3->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
+    nng   = part3->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    gprob = part3->proto()->track()->ghostProbability();
     if ( part3->proto()->track()->type() == 1 ) {
       charge = 0;
     } else {
@@ -463,6 +499,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_NNp3" + m_outputSuffix, nnp );
   tuple->column( prefix + "_ISOLATION_IsMuon3" + m_outputSuffix, ismuon );
   tuple->column( prefix + "_ISOLATION_NNghost3" + m_outputSuffix, nng );
+  tuple->column( prefix + "_ISOLATION_GhostProb3" + m_outputSuffix, gprob );
   tuple->column( prefix + "_ISOLATION_TRUEID3" + m_outputSuffix, trueID );
 
   if ( bdt4 > -1 ) {
@@ -476,6 +513,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     nnk  = part4->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
     nnpi = part4->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
     nng  = part4->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    gprob = part4->proto()->track()->ghostProbability();
     if ( part4->proto()->track()->type() == 1 ) {
       charge = 0;
     } else {
@@ -510,7 +548,57 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   tuple->column( prefix + "_ISOLATION_NNp4" + m_outputSuffix, nnp );
   tuple->column( prefix + "_ISOLATION_IsMuon4" + m_outputSuffix, ismuon );
   tuple->column( prefix + "_ISOLATION_NNghost4" + m_outputSuffix, nng );
+  tuple->column( prefix + "_ISOLATION_GhostProb4" + m_outputSuffix, gprob );
   tuple->column( prefix + "_ISOLATION_TRUEID4" + m_outputSuffix, trueID );
+
+  if ( bdt5 > -1 ) {
+    pe    = part5->momentum().E();
+    px    = part5->momentum().Px();
+    py    = part5->momentum().Py();
+    pz    = part5->momentum().Pz();
+    pidk  = part5->proto()->info( LHCb::ProtoParticle::CombDLLk, -1000 );
+    pidp  = part5->proto()->info( LHCb::ProtoParticle::CombDLLp, -1000 );
+    nnp   = part5->proto()->info( LHCb::ProtoParticle::ProbNNp, -1 );
+    nnk   = part5->proto()->info( LHCb::ProtoParticle::ProbNNk, -1000 );
+    nnpi  = part5->proto()->info( LHCb::ProtoParticle::ProbNNpi, -1000 );
+    nng   = part5->proto()->info( LHCb::ProtoParticle::ProbNNghost, -1000 );
+    gprob = part5->proto()->track()->ghostProbability();
+    if ( part5->proto()->track()->type() == 1 ) {
+      charge = 0;
+    } else {
+      charge = part5->proto()->track()->charge();
+    }
+    type                   = part5->proto()->track()->type();
+    const MuonPID* muonPID = part5->proto()->muonPID();
+    ismuon                 = muonPID ? muonPID->IsMuon() : false;
+
+    const LHCb::MCParticle* mcp( nullptr );
+    if ( msgLevel( MSG::VERBOSE ) )
+      verbose() << "Getting related MCP to " << part5 << endmsg;
+    mcp = m_p2mcAssoc->relatedMCP( part5 );
+    if ( msgLevel( MSG::VERBOSE ) ) verbose() << "Got mcp " << mcp << endmsg;
+    trueID = ( mcp ? mcp->particleID().pid() : 0 );
+  }
+
+  tuple->column( prefix + "_ISOLATION_CHI25" + m_outputSuffix, mchi25 );
+  tuple->column( prefix + "_ISOLATION_SC5" + m_outputSuffix, _sc5 );
+  tuple->column( prefix + "_ISOLATION_BDT5" + m_outputSuffix, bdt5 );
+  tuple->column( prefix + "_ISOLATION_ANGLE5" + m_outputSuffix, angle5 );
+  tuple->column( prefix + "_ISOLATION_CHARGE5" + m_outputSuffix, charge );
+  tuple->column( prefix + "_ISOLATION_Type5" + m_outputSuffix, type );
+  tuple->column( prefix + "_ISOLATION_PE5" + m_outputSuffix, pe );
+  tuple->column( prefix + "_ISOLATION_PX5" + m_outputSuffix, px );
+  tuple->column( prefix + "_ISOLATION_PY5" + m_outputSuffix, py );
+  tuple->column( prefix + "_ISOLATION_PZ5" + m_outputSuffix, pz );
+  tuple->column( prefix + "_ISOLATION_PIDK5" + m_outputSuffix, pidk );
+  tuple->column( prefix + "_ISOLATION_PIDp5" + m_outputSuffix, pidp );
+  tuple->column( prefix + "_ISOLATION_NNk5" + m_outputSuffix, nnk );
+  tuple->column( prefix + "_ISOLATION_NNpi5" + m_outputSuffix, nnpi );
+  tuple->column( prefix + "_ISOLATION_NNp5" + m_outputSuffix, nnp );
+  tuple->column( prefix + "_ISOLATION_IsMuon5" + m_outputSuffix, ismuon );
+  tuple->column( prefix + "_ISOLATION_NNghost5" + m_outputSuffix, nng );
+  tuple->column( prefix + "_ISOLATION_GhostProb5" + m_outputSuffix, gprob );
+  tuple->column( prefix + "_ISOLATION_TRUEID5" + m_outputSuffix, trueID );
 
   return StatusCode( test );
 }
