@@ -1,22 +1,30 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.15)
 
-#---------------------------------------------------------------
-# Load macros and functions for Gaudi-based projects
-find_package(GaudiProject)
-#---------------------------------------------------------------
+
+project(DaVinci VERSION 46.12
+        LANGUAGES CXX)
+
+
+list(PREPEND CMAKE_MODULE_PATH
+    ${PROJECT_SOURCE_DIR}/cmake
+)
+
+# Dependencies
+include(TupleToolSemiLeptonicDependencies)
+
+# -- Subdirectories
+lhcb_add_subdirectories(
+    Phys/TupleToolSemiLeptonic
+)
+
+lhcb_finalize_configuration()
+
+# Not sure if the code below is still needed
+# I don't see anyhting similar in neither Phys or Analysis
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/Online/RootCnv)
   set(override_subdirs RootCnv)
 endif()
-
-# Declare project name and version
-# Syntax:
-#    gaudi_project(this_project this_version
-#                  USE dep_project_1 version_1 [project_2 version_2 ...]
-#                  [DATA pkg1 [VERSION vers1] [pkg2 ...])
-gaudi_project(DaVinciDev  v45r6
-              USE DaVinci v45r6)
-
 # Enable Ganga integration
 include(GangaTools OPTIONAL RESULT_VARIABLE GangaTools_FOUND)
 if(GangaTools_FOUND)

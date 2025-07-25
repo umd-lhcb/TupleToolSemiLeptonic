@@ -2,7 +2,6 @@
 // Include files
 #include "gsl/gsl_sys.h"
 // from Gaudi
-#include "GaudiKernel/ToolFactory.h"
 #include "GaudiKernel/PhysicalConstants.h"
 // local
 #include "TupleToolMCDaughters.h"
@@ -220,6 +219,4 @@ StatusCode TupleToolMCDaughters::fill( const LHCb::Particle*
 
 //=============================================================================
 
-// Declaration of the Tool Factory
-// actually acts as a using namespace TupleTool
 DECLARE_COMPONENT( TupleToolMCDaughters )

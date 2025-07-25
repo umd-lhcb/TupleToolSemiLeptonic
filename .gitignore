@@ -2,3 +2,5 @@
 .gaudi_project_ignore
 cmake-build-debug
 **/.idea/workspace.xml **/.idea/tasks.xml
+
+toolchain.cmake

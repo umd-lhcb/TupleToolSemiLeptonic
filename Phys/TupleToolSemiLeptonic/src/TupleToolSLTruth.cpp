@@ -3,7 +3,6 @@
 #include "gsl/gsl_sys.h"
 // from Gaudi
 #include "GaudiKernel/PhysicalConstants.h"
-#include "GaudiKernel/ToolFactory.h"
 // local
 #include "TupleToolSLTruth.h"
 
@@ -610,7 +609,6 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
 
 //=============================================================================
 
-// Declaration of the Tool Factory
 DECLARE_COMPONENT( TupleToolSLTruth )
 
 //=============================================================================
