@@ -3,6 +3,7 @@
 #include "gsl/gsl_sys.h"
 // from Gaudi
 #include "GaudiKernel/PhysicalConstants.h"
+#include "GaudiKernel/Vector3DTypes.h"
 // local
 #include "TupleToolMCDaughters.h"
 
@@ -98,7 +99,11 @@ StatusCode TupleToolMCDaughters::fill( const LHCb::Particle*
   const LHCb::MCParticle* mcpP(NULL);
   const LHCb::MCParticle* mcp(NULL);
   std::vector<Gaudi::LorentzVector> relatedVectors;
+  std::vector<Gaudi::XYZPoint> relatedOriginVertices;
   std::vector<int> relatedIDs;
+  relatedVectors.reserve(m_nMin);
+  relatedOriginVertices.reserve(m_nMin);
+  relatedIDs.reserve(m_nMin);
   std::string related = "DAUGHTER"; // if mother not set, the particles retrived are daughters of P; else sisters
 
   if ( P )
@@ -197,6 +202,7 @@ StatusCode TupleToolMCDaughters::fill( const LHCb::Particle*
     if((*itD)->particleID().abspid() == 22) continue;
     relatedIDs.push_back( (*itD)->particleID().pid() );
     relatedVectors.push_back( (*itD)->momentum() );
+    relatedOriginVertices.push_back( (*itD)->originVertex()->position() );
   }
   i=0;
   for (;i<m_nMin;i++) {
@@ -204,9 +210,11 @@ StatusCode TupleToolMCDaughters::fill( const LHCb::Particle*
     if (i >= relatedIDs.size()) {
       test &= tuple->column( prefix+"_"+related+sout.str()+"_ID", 0);
       test &= tuple->column( prefix+"_"+related+sout.str()+"_P", Gaudi::LorentzVector(0, 0, 0, 0));
+      test &= tuple->column( prefix+"_"+related+sout.str()+"_ORIGINVERTEX_", Gaudi::XYZVector(0, 0, 0) );
     } else {
       test &= tuple->column( prefix+"_"+related+sout.str()+"_ID", relatedIDs[i]);
       test &= tuple->column( prefix+"_"+related+sout.str()+"_P", relatedVectors[i]);
+      test &= tuple->column( prefix+"_"+related+sout.str()+"_ORIGINVERTEX_", relatedOriginVertices[i]);
     }
     sout.str("");
     if(m_Mother) { // already know from above that if m_Mother is true, mcp must not be null ptr
