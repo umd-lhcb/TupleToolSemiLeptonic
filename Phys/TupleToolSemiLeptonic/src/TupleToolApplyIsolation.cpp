@@ -336,7 +336,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
             angle5 = angle4;
             angle4 = angle3;
             angle3 = opening;
-          } else if ( bdtval > bdt3 ) {
+          } else if ( bdtval > bdt4 ) {
             bdt5   = bdt4;
             bdt4   = bdtval;
             part5  = part4;
@@ -347,7 +347,7 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
             _sc4   = sc3.getCode();
             angle5 = angle4;
             angle4 = opening;
-          } else if ( bdtval > bdt4 ) {
+          } else if ( bdtval > bdt5 ) {
             bdt5   = bdtval;
             part5  = part;
             mchi25 = tmpchi2;
