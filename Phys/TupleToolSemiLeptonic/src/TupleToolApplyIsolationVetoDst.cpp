@@ -66,14 +66,14 @@ StatusCode TupleToolApplyIsolationVetoDst::initialize() {
 
   m_dist = tool<IDistanceCalculator>( "LoKi::DistanceCalculator", this );
   if ( !m_dist ) {
-    Error( "Unable to retrieve the IDistanceCalculator tool" );
+    Error( "Unable to retrieve the IDistanceCalculator tool" ).ignore();
     return StatusCode::FAILURE;
   }
   m_pvReFitter = tool<IPVReFitter>( "AdaptivePVReFitter", this );
   m_pVertexFit = tool<IVertexFit>( "LoKi::VertexFitter", this );
 
   if ( !m_pVertexFit ) {
-    Error( "Unable to retrieve the IVertexFit tool" );
+    Error( "Unable to retrieve the IVertexFit tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
@@ -98,7 +98,7 @@ StatusCode TupleToolApplyIsolationVetoDst::initialize() {
 
   m_Reader->BookMVA( "BDT method", m_weightsName );
   if ( !m_Reader ) {
-    Error( "Unable to retrieve the IVertexFit tool" );
+    Error( "Unable to retrieve the IVertexFit tool" ).ignore();
     return StatusCode::FAILURE;
   }
   return StatusCode::SUCCESS;
@@ -125,8 +125,8 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   LHCb::Particle::ConstVector parts2VertexDst;
   LHCb::Particle::ConstVector parts2VertexD;
 
-  double                maxbdt[m_nWrite];
-  const LHCb::Particle* SelParts[m_nWrite];
+  std::vector<double> maxbdt(m_nWrite, 0.);
+  std::vector<const LHCb::Particle*> SelParts(m_nWrite, nullptr);
 
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
@@ -142,14 +142,14 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
   }
   if ( !theD ) {
     warning() << "NOT FOUND D0 " << endmsg;
-    tuple->column( prefix + "_ISOLATION_DstWindowOK", false );
-    tuple->column( prefix + "_ISOLATION_DstWindowBDT", (float)0 );
-    tuple->column( prefix + "_ISOLATION_DstWindowDELTAM", (float)0 );
-    tuple->column( prefix + "_ISOLATION_DstWindowBDT2", (float)0 );
-    tuple->column( prefix + "_ISOLATION_DstWindowDELTAM2", (float)0 );
-    tuple->column( prefix + "_ISOLATION_DstWindowInWindow", (float)0 );
+    test &= tuple->column( prefix + "_ISOLATION_DstWindowOK", false );
+    test &= tuple->column( prefix + "_ISOLATION_DstWindowBDT", (float)0 );
+    test &= tuple->column( prefix + "_ISOLATION_DstWindowDELTAM", (float)0 );
+    test &= tuple->column( prefix + "_ISOLATION_DstWindowBDT2", (float)0 );
+    test &= tuple->column( prefix + "_ISOLATION_DstWindowDELTAM2", (float)0 );
+    test &= tuple->column( prefix + "_ISOLATION_DstWindowInWindow", (float)0 );
 
-    return StatusCode( true );
+    return StatusCode( test );
   }
   parts2VertexDst.push_back( theD );
   for ( int i = 0; i < m_nWrite; i++ ) {
@@ -336,22 +336,22 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
       sout << i + 1;
       name = sout.str();
     }
-    writeParticle( SelParts[i], maxbdt[i], name, tuple, prefix, mother );
+    test &= writeParticle( SelParts[i], maxbdt[i], name, tuple, prefix, mother );
     sout.str( "" );
   }
 
-  tuple->column( prefix + "_ISOLATION_DstWindowOK", DstOK );
-  tuple->column( prefix + "_ISOLATION_DstWindowBDT", DstBDT1 );
-  tuple->column( prefix + "_ISOLATION_DstWindowDELTAM", DstM1 );
-  tuple->column( prefix + "_ISOLATION_DstWindowBDT2", DstBDT2 );
-  tuple->column( prefix + "_ISOLATION_DstWindowDELTAM2", DstM2 );
-  tuple->column( prefix + "_ISOLATION_DstWindowInWindow", nWindow );
+  test &= tuple->column( prefix + "_ISOLATION_DstWindowOK", DstOK );
+  test &= tuple->column( prefix + "_ISOLATION_DstWindowBDT", DstBDT1 );
+  test &= tuple->column( prefix + "_ISOLATION_DstWindowDELTAM", DstM1 );
+  test &= tuple->column( prefix + "_ISOLATION_DstWindowBDT2", DstBDT2 );
+  test &= tuple->column( prefix + "_ISOLATION_DstWindowDELTAM2", DstM2 );
+  test &= tuple->column( prefix + "_ISOLATION_DstWindowInWindow", nWindow );
   if ( m_verbose ) {
-    tuple->column( prefix + "_ISOLATION_DstDeltaMassWindow", deltaMassWindow );
-    tuple->column( prefix + "_ISOLATION_DstGhostOK", DstGhostOK );
-    tuple->column( prefix + "_ISOLATION_DstType3OK", DstType3OK );
-    tuple->column( prefix + "_ISOLATION_DstType4OK", DstType4OK );
-    tuple->column( prefix + "_ISOLATION_DstType1OK", DstType1OK );
+    test &= tuple->column( prefix + "_ISOLATION_DstDeltaMassWindow", deltaMassWindow );
+    test &= tuple->column( prefix + "_ISOLATION_DstGhostOK", DstGhostOK );
+    test &= tuple->column( prefix + "_ISOLATION_DstType3OK", DstType3OK );
+    test &= tuple->column( prefix + "_ISOLATION_DstType4OK", DstType4OK );
+    test &= tuple->column( prefix + "_ISOLATION_DstType1OK", DstType1OK );
   }
 
   return StatusCode( test );
@@ -464,9 +464,10 @@ double TupleToolApplyIsolationVetoDst::getopening( const LHCb::Track*    track,
 //=============================================================================
 // Store information in tuple for selected particles
 //=============================================================================
-void TupleToolApplyIsolationVetoDst::writeParticle(
+bool TupleToolApplyIsolationVetoDst::writeParticle(
     const LHCb::Particle* P, double bdt, const std::string& name,
     Tuples::Tuple& tuple, std::string prefix, const LHCb::Particle* Mother ) {
+  bool test = true;
   if ( bdt > -1 ) {
     if ( m_trueID ) {
       const LHCb::MCParticle* mcp( nullptr );
@@ -495,7 +496,7 @@ void TupleToolApplyIsolationVetoDst::writeParticle(
       float motherID = -1;
       if ( foundMCP )
         if ( mcp->mother() ) motherID = mcp->mother()->particleID().abspid();
-      tuple->column( prefix + "_ISOLATION_MOTHERID" + name + m_outputSuffix,
+      test &= tuple->column( prefix + "_ISOLATION_MOTHERID" + name + m_outputSuffix,
                      motherID );
       float sameMother = 0;
       if ( foundMCP ) {
@@ -513,16 +514,17 @@ void TupleToolApplyIsolationVetoDst::writeParticle(
         }
       }
 
-      tuple->column( prefix + "_ISOLATION_SAMEMOTHER" + name + m_outputSuffix,
+      test &= tuple->column( prefix + "_ISOLATION_SAMEMOTHER" + name + m_outputSuffix,
                      sameMother );
     }
 
   } else {
     if ( m_trueID ) {
-      tuple->column( prefix + "_ISOLATION_MOTHERID" + name + m_outputSuffix,
+      test &= tuple->column( prefix + "_ISOLATION_MOTHERID" + name + m_outputSuffix,
                      (float)-1. );
-      tuple->column( prefix + "_ISOLATION_SAMEMOTHER" + name + m_outputSuffix,
+      test &= tuple->column( prefix + "_ISOLATION_SAMEMOTHER" + name + m_outputSuffix,
                      (float)-1 );
     }
   }
+  return test;
 }

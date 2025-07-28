@@ -285,7 +285,7 @@ StatusCode TupleToolTauMuDiscrVars::fillMinIP( const Particle*    P,
 
   if ( msgLevel( MSG::VERBOSE ) )
     verbose() << "Return from fillMinIP: " << prefix << " " << test << endmsg;
-  if ( !test ) Warning( "Error in fillMinIP", StatusCode::FAILURE, 1 );
+  if ( !test ) Warning( "Error in fillMinIP", StatusCode::FAILURE, 1 ).ignore();
   return StatusCode( test );
 }
 

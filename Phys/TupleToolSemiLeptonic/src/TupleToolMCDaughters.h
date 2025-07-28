@@ -28,16 +28,16 @@ public:
   virtual StatusCode fill( const LHCb::Particle*
                            , const LHCb::Particle*
                            , const std::string&
-                           , Tuples::Tuple& );
+                           , Tuples::Tuple& ) override;
 
-  virtual StatusCode initialize();
+  virtual StatusCode initialize() override;
 
 private:
 
   std::vector<IParticle2MCAssociator*> m_p2mcAssocs;
   std::vector<std::string> m_p2mcAssocTypes;
   bool m_Mother;
-  int m_nMin;
+  unsigned m_nMin;
   std::vector<std::string> m_toolList; ///< names of all MCTupleTools, set by the option ToolList
 
   std::vector<IMCParticleTupleTool*> m_mcTools; ///<vector of MCTools to fill

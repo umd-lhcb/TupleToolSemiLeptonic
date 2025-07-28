@@ -146,7 +146,7 @@ StatusCode TupleToolMCDaughters::fill( const LHCb::Particle*
   //warning() << "ENDVERTICES SIZE: " << EndVertices.size() << endmsg;
   const SmartRefVector< LHCb::MCParticle > daughters = endV->products();
 
-  int i=0;
+  unsigned i=0;
   std::stringstream sout;
   // Greg's old code
   // warning() << "looping through" <<endmsg;

@@ -64,19 +64,19 @@ StatusCode TupleToolTagDiscardDstMu::initialize() {
 
   m_dist = m_dva->distanceCalculator();
   if ( !m_dist ) {
-    Error( "Unable to retrieve the IDistanceCalculator tool" );
+    Error( "Unable to retrieve the IDistanceCalculator tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
   m_pVertexFit = tool<IVertexFit>( "LoKi::VertexFitter", this );
   if ( !m_pVertexFit ) {
-    Error( "Unable to retrieve the IVertexFit tool" );
+    Error( "Unable to retrieve the IVertexFit tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
   m_ltfit = tool<ILifetimeFitter>( "PropertimeFitter", this );
   if ( !m_ltfit ) {
-    Error( "Unable to retrieve the ILifetimeFitter tool" );
+    Error( "Unable to retrieve the ILifetimeFitter tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
@@ -104,9 +104,6 @@ StatusCode TupleToolTagDiscardDstMu::fill( const Particle*    mother,
   debug() << "vertex for P, ID " << P->particleID().pid() << " = " << vtx
           << " at " << vtx->position() << endmsg;
 
-  // The vertex chi2 of the composite particle being tested
-  double vtxChi2 = vtx->chi2();
-
   // Get all the particle's final states
   LHCb::Particle::ConstVector source;
   LHCb::Particle::ConstVector target;
@@ -121,11 +118,9 @@ StatusCode TupleToolTagDiscardDstMu::fill( const Particle*    mother,
   secondaryparts.clear();
   parts.clear();
 
-  int                   i1 = 0;
-  const LHCb::Particle *mu, *pislow, *muMu, *tauMu, *D;
-  LHCb::Particle*       a1;
-  bool                  foundD = false;
-  LHCb::Particle*       newD;
+  const LHCb::Particle* pislow = nullptr;
+  const LHCb::Particle* muMu = nullptr;
+  const LHCb::Particle* D = nullptr;
 
   LHCb::Particle::ConstVector bDaughters = mother->daughtersVector();
   // Mu loop
