@@ -46,7 +46,7 @@ class TupleToolApplyIsolationVetoDst : public TupleToolBase,
   double              getopening( const LHCb::Track*, const LHCb::Particle* );
   const LHCb::Vertex* originVertex( const LHCb::Particle*,
                                     const LHCb::Particle* ) const;
-  void                writeParticle( const LHCb::Particle* P, double bdt,
+  bool                writeParticle( const LHCb::Particle* P, double bdt,
                                      const std::string& name, Tuples::Tuple& tuple,
                                      std::string prefix, const LHCb::Particle* Mother );
 

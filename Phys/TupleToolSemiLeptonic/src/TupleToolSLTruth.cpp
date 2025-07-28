@@ -193,7 +193,7 @@ StatusCode TupleToolSLTruth::getMCTruePi0s( const LHCb::MCParticle* MCP,
                   ++itDMCP ) {
               if ( ( *itDMCP ) ) {
                 getMCTruePi0s( ( *itDMCP ), MCTruePi0PX_, MCTruePi0PY_,
-                               MCTruePi0PZ_, MCTruePi0E_, MCTruePi0MID_ );
+                               MCTruePi0PZ_, MCTruePi0E_, MCTruePi0MID_ ).ignore();
               }
             }
           }
@@ -248,7 +248,7 @@ StatusCode TupleToolSLTruth::getMCTrueGammas(
                     getMCTrueGammas( ( *itDMCP ), MCTrueGammaPX_,
                                      MCTrueGammaPY_, MCTrueGammaPZ_,
                                      MCTrueGammaE_, MCTrueGammaMID_,
-                                     MCTrueGammaIsRad_ );
+                                     MCTrueGammaIsRad_ ).ignore();
                   }
                 }
               }
@@ -309,9 +309,9 @@ StatusCode TupleToolSLTruth::fill( const LHCb::Particle*,
       // || abs(mcp->particleID().pid())==5221) {
       if ( isBeautyHadron( abs( mcp->particleID().pid() ) ) ) {
         getMCTruePi0s( mcp, &MCTruePi0PX, &MCTruePi0PY, &MCTruePi0PZ,
-                       &MCTruePi0E, &MCTruePi0MID );
+                       &MCTruePi0E, &MCTruePi0MID ).ignore();
         getMCTrueGammas( mcp, &MCTrueGammaPX, &MCTrueGammaPY, &MCTrueGammaPZ,
-                         &MCTrueGammaE, &MCTrueGammaMID, &MCTrueGammaIsRad );
+                         &MCTrueGammaE, &MCTrueGammaMID, &MCTrueGammaIsRad ).ignore();
       }
 
       // pointer is ready, prepare the values

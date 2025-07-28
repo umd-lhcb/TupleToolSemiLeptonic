@@ -68,14 +68,14 @@ StatusCode TupleToolApplyIsolation::initialize() {
   m_dist      = tool<IDistanceCalculator>( "LoKi::DistanceCalculator", this );
   m_p2mcAssoc = tool<IParticle2MCAssociator>( "DaVinciSmartAssociator", this );
   if ( !m_dist ) {
-    Error( "Unable to retrieve the IDistanceCalculator tool" );
+    Error( "Unable to retrieve the IDistanceCalculator tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
   m_pvReFitter = tool<IPVReFitter>( "AdaptivePVReFitter", this );
   m_pVertexFit = tool<IVertexFit>( "LoKi::VertexFitter", this );
   if ( !m_pVertexFit ) {
-    Error( "Unable to retrieve the IVertexFit tool" );
+    Error( "Unable to retrieve the IVertexFit tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
@@ -98,7 +98,7 @@ StatusCode TupleToolApplyIsolation::initialize() {
 
   m_Reader->BookMVA( "BDT method", m_weightsName );
   if ( !m_Reader ) {
-    Error( "Unable to retrieve the IVertexFit tool" );
+    Error( "Unable to retrieve the IVertexFit tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
@@ -139,7 +139,11 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   LHCb::Particle::ConstVector parts2Vertex;
   LHCb::Particle::ConstVector parts2VertexD;
 
-  double                angle, angle2, angle3, angle4, angle5;
+  double                angle = -1;
+  double                angle2 = -1;
+  double                angle3 = -1;
+  double                angle4 = -1;
+  double                angle5 = -1;
   double                maxchi2 = -99;
   double                mchi22  = -99;
   double                mchi23  = -99;
@@ -156,11 +160,11 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   int                   _sc3    = -999;
   int                   _sc4    = -999;
   int                   _sc5    = -999;
-  const LHCb::Particle* maxpart;
-  const LHCb::Particle* part2;
-  const LHCb::Particle* part3;
-  const LHCb::Particle* part4;
-  const LHCb::Particle* part5;
+  const LHCb::Particle* maxpart = nullptr;
+  const LHCb::Particle* part2 = nullptr;
+  const LHCb::Particle* part3 = nullptr;
+  const LHCb::Particle* part4 = nullptr;
+  const LHCb::Particle* part5 = nullptr;
 
   vertexchi2 = P->endVertex()->chi2();
   parts2Vertex.clear();
@@ -384,25 +388,25 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     trueID = ( mcp ? mcp->particleID().pid() : 0 );
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI2" + m_outputSuffix, maxchi2 );
-  tuple->column( prefix + "_ISOLATION_ANGLE" + m_outputSuffix, angle );
-  tuple->column( prefix + "_ISOLATION_SC" + m_outputSuffix, _sc );
-  tuple->column( prefix + "_ISOLATION_BDT" + m_outputSuffix, maxbdt );
-  tuple->column( prefix + "_ISOLATION_CHARGE" + m_outputSuffix, charge );
-  tuple->column( prefix + "_ISOLATION_Type" + m_outputSuffix, type );
-  tuple->column( prefix + "_ISOLATION_PE" + m_outputSuffix, pe );
-  tuple->column( prefix + "_ISOLATION_PX" + m_outputSuffix, px );
-  tuple->column( prefix + "_ISOLATION_PY" + m_outputSuffix, py );
-  tuple->column( prefix + "_ISOLATION_PZ" + m_outputSuffix, pz );
-  tuple->column( prefix + "_ISOLATION_PIDK" + m_outputSuffix, pidk );
-  tuple->column( prefix + "_ISOLATION_PIDp" + m_outputSuffix, pidp );
-  tuple->column( prefix + "_ISOLATION_NNk" + m_outputSuffix, nnk );
-  tuple->column( prefix + "_ISOLATION_NNpi" + m_outputSuffix, nnpi );
-  tuple->column( prefix + "_ISOLATION_NNp" + m_outputSuffix, nnp );
-  tuple->column( prefix + "_ISOLATION_IsMuon" + m_outputSuffix, ismuon );
-  tuple->column( prefix + "_ISOLATION_NNghost" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_GhostProb" + m_outputSuffix, gprob );
-  tuple->column( prefix + "_ISOLATION_TRUEID" + m_outputSuffix, trueID );
+  test &= tuple->column( prefix + "_ISOLATION_CHI2" + m_outputSuffix, maxchi2 );
+  test &= tuple->column( prefix + "_ISOLATION_ANGLE" + m_outputSuffix, angle );
+  test &= tuple->column( prefix + "_ISOLATION_SC" + m_outputSuffix, _sc );
+  test &= tuple->column( prefix + "_ISOLATION_BDT" + m_outputSuffix, maxbdt );
+  test &= tuple->column( prefix + "_ISOLATION_CHARGE" + m_outputSuffix, charge );
+  test &= tuple->column( prefix + "_ISOLATION_Type" + m_outputSuffix, type );
+  test &= tuple->column( prefix + "_ISOLATION_PE" + m_outputSuffix, pe );
+  test &= tuple->column( prefix + "_ISOLATION_PX" + m_outputSuffix, px );
+  test &= tuple->column( prefix + "_ISOLATION_PY" + m_outputSuffix, py );
+  test &= tuple->column( prefix + "_ISOLATION_PZ" + m_outputSuffix, pz );
+  test &= tuple->column( prefix + "_ISOLATION_PIDK" + m_outputSuffix, pidk );
+  test &= tuple->column( prefix + "_ISOLATION_PIDp" + m_outputSuffix, pidp );
+  test &= tuple->column( prefix + "_ISOLATION_NNk" + m_outputSuffix, nnk );
+  test &= tuple->column( prefix + "_ISOLATION_NNpi" + m_outputSuffix, nnpi );
+  test &= tuple->column( prefix + "_ISOLATION_NNp" + m_outputSuffix, nnp );
+  test &= tuple->column( prefix + "_ISOLATION_IsMuon" + m_outputSuffix, ismuon );
+  test &= tuple->column( prefix + "_ISOLATION_NNghost" + m_outputSuffix, nng );
+  test &= tuple->column( prefix + "_ISOLATION_GhostProb" + m_outputSuffix, gprob );
+  test &= tuple->column( prefix + "_ISOLATION_TRUEID" + m_outputSuffix, trueID );
 
   if ( bdt2 > -1 ) {
     pe    = part2->momentum().E();
@@ -433,25 +437,25 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     trueID = ( mcp ? mcp->particleID().pid() : 0 );
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI22" + m_outputSuffix, mchi22 );
-  tuple->column( prefix + "_ISOLATION_SC2" + m_outputSuffix, _sc2 );
-  tuple->column( prefix + "_ISOLATION_ANGLE2" + m_outputSuffix, angle2 );
-  tuple->column( prefix + "_ISOLATION_BDT2" + m_outputSuffix, bdt2 );
-  tuple->column( prefix + "_ISOLATION_CHARGE2" + m_outputSuffix, charge );
-  tuple->column( prefix + "_ISOLATION_Type2" + m_outputSuffix, type );
-  tuple->column( prefix + "_ISOLATION_PE2" + m_outputSuffix, pe );
-  tuple->column( prefix + "_ISOLATION_PX2" + m_outputSuffix, px );
-  tuple->column( prefix + "_ISOLATION_PY2" + m_outputSuffix, py );
-  tuple->column( prefix + "_ISOLATION_PZ2" + m_outputSuffix, pz );
-  tuple->column( prefix + "_ISOLATION_PIDK2" + m_outputSuffix, pidk );
-  tuple->column( prefix + "_ISOLATION_PIDp2" + m_outputSuffix, pidp );
-  tuple->column( prefix + "_ISOLATION_NNk2" + m_outputSuffix, nnk );
-  tuple->column( prefix + "_ISOLATION_NNpi2" + m_outputSuffix, nnpi );
-  tuple->column( prefix + "_ISOLATION_NNp2" + m_outputSuffix, nnp );
-  tuple->column( prefix + "_ISOLATION_IsMuon2" + m_outputSuffix, ismuon );
-  tuple->column( prefix + "_ISOLATION_NNghost2" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_GhostProb2" + m_outputSuffix, gprob );
-  tuple->column( prefix + "_ISOLATION_TRUEID2" + m_outputSuffix, trueID );
+  test &= tuple->column( prefix + "_ISOLATION_CHI22" + m_outputSuffix, mchi22 );
+  test &= tuple->column( prefix + "_ISOLATION_SC2" + m_outputSuffix, _sc2 );
+  test &= tuple->column( prefix + "_ISOLATION_ANGLE2" + m_outputSuffix, angle2 );
+  test &= tuple->column( prefix + "_ISOLATION_BDT2" + m_outputSuffix, bdt2 );
+  test &= tuple->column( prefix + "_ISOLATION_CHARGE2" + m_outputSuffix, charge );
+  test &= tuple->column( prefix + "_ISOLATION_Type2" + m_outputSuffix, type );
+  test &= tuple->column( prefix + "_ISOLATION_PE2" + m_outputSuffix, pe );
+  test &= tuple->column( prefix + "_ISOLATION_PX2" + m_outputSuffix, px );
+  test &= tuple->column( prefix + "_ISOLATION_PY2" + m_outputSuffix, py );
+  test &= tuple->column( prefix + "_ISOLATION_PZ2" + m_outputSuffix, pz );
+  test &= tuple->column( prefix + "_ISOLATION_PIDK2" + m_outputSuffix, pidk );
+  test &= tuple->column( prefix + "_ISOLATION_PIDp2" + m_outputSuffix, pidp );
+  test &= tuple->column( prefix + "_ISOLATION_NNk2" + m_outputSuffix, nnk );
+  test &= tuple->column( prefix + "_ISOLATION_NNpi2" + m_outputSuffix, nnpi );
+  test &= tuple->column( prefix + "_ISOLATION_NNp2" + m_outputSuffix, nnp );
+  test &= tuple->column( prefix + "_ISOLATION_IsMuon2" + m_outputSuffix, ismuon );
+  test &= tuple->column( prefix + "_ISOLATION_NNghost2" + m_outputSuffix, nng );
+  test &= tuple->column( prefix + "_ISOLATION_GhostProb2" + m_outputSuffix, gprob );
+  test &= tuple->column( prefix + "_ISOLATION_TRUEID2" + m_outputSuffix, trueID );
 
   if ( bdt3 > -1 ) {
     pe    = part3->momentum().E();
@@ -482,25 +486,25 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     trueID = ( mcp ? mcp->particleID().pid() : 0 );
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI23" + m_outputSuffix, mchi23 );
-  tuple->column( prefix + "_ISOLATION_SC3" + m_outputSuffix, _sc3 );
-  tuple->column( prefix + "_ISOLATION_BDT3" + m_outputSuffix, bdt3 );
-  tuple->column( prefix + "_ISOLATION_ANGLE3" + m_outputSuffix, angle3 );
-  tuple->column( prefix + "_ISOLATION_CHARGE3" + m_outputSuffix, charge );
-  tuple->column( prefix + "_ISOLATION_Type3" + m_outputSuffix, type );
-  tuple->column( prefix + "_ISOLATION_PE3" + m_outputSuffix, pe );
-  tuple->column( prefix + "_ISOLATION_PX3" + m_outputSuffix, px );
-  tuple->column( prefix + "_ISOLATION_PY3" + m_outputSuffix, py );
-  tuple->column( prefix + "_ISOLATION_PZ3" + m_outputSuffix, pz );
-  tuple->column( prefix + "_ISOLATION_PIDK3" + m_outputSuffix, pidk );
-  tuple->column( prefix + "_ISOLATION_PIDp3" + m_outputSuffix, pidp );
-  tuple->column( prefix + "_ISOLATION_NNk3" + m_outputSuffix, nnk );
-  tuple->column( prefix + "_ISOLATION_NNpi3" + m_outputSuffix, nnpi );
-  tuple->column( prefix + "_ISOLATION_NNp3" + m_outputSuffix, nnp );
-  tuple->column( prefix + "_ISOLATION_IsMuon3" + m_outputSuffix, ismuon );
-  tuple->column( prefix + "_ISOLATION_NNghost3" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_GhostProb3" + m_outputSuffix, gprob );
-  tuple->column( prefix + "_ISOLATION_TRUEID3" + m_outputSuffix, trueID );
+  test &= tuple->column( prefix + "_ISOLATION_CHI23" + m_outputSuffix, mchi23 );
+  test &= tuple->column( prefix + "_ISOLATION_SC3" + m_outputSuffix, _sc3 );
+  test &= tuple->column( prefix + "_ISOLATION_BDT3" + m_outputSuffix, bdt3 );
+  test &= tuple->column( prefix + "_ISOLATION_ANGLE3" + m_outputSuffix, angle3 );
+  test &= tuple->column( prefix + "_ISOLATION_CHARGE3" + m_outputSuffix, charge );
+  test &= tuple->column( prefix + "_ISOLATION_Type3" + m_outputSuffix, type );
+  test &= tuple->column( prefix + "_ISOLATION_PE3" + m_outputSuffix, pe );
+  test &= tuple->column( prefix + "_ISOLATION_PX3" + m_outputSuffix, px );
+  test &= tuple->column( prefix + "_ISOLATION_PY3" + m_outputSuffix, py );
+  test &= tuple->column( prefix + "_ISOLATION_PZ3" + m_outputSuffix, pz );
+  test &= tuple->column( prefix + "_ISOLATION_PIDK3" + m_outputSuffix, pidk );
+  test &= tuple->column( prefix + "_ISOLATION_PIDp3" + m_outputSuffix, pidp );
+  test &= tuple->column( prefix + "_ISOLATION_NNk3" + m_outputSuffix, nnk );
+  test &= tuple->column( prefix + "_ISOLATION_NNpi3" + m_outputSuffix, nnpi );
+  test &= tuple->column( prefix + "_ISOLATION_NNp3" + m_outputSuffix, nnp );
+  test &= tuple->column( prefix + "_ISOLATION_IsMuon3" + m_outputSuffix, ismuon );
+  test &= tuple->column( prefix + "_ISOLATION_NNghost3" + m_outputSuffix, nng );
+  test &= tuple->column( prefix + "_ISOLATION_GhostProb3" + m_outputSuffix, gprob );
+  test &= tuple->column( prefix + "_ISOLATION_TRUEID3" + m_outputSuffix, trueID );
 
   if ( bdt4 > -1 ) {
     pe   = part4->momentum().E();
@@ -531,25 +535,25 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     trueID = ( mcp ? mcp->particleID().pid() : 0 );
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI24" + m_outputSuffix, mchi24 );
-  tuple->column( prefix + "_ISOLATION_SC4" + m_outputSuffix, _sc4 );
-  tuple->column( prefix + "_ISOLATION_BDT4" + m_outputSuffix, bdt4 );
-  tuple->column( prefix + "_ISOLATION_ANGLE4" + m_outputSuffix, angle4 );
-  tuple->column( prefix + "_ISOLATION_CHARGE4" + m_outputSuffix, charge );
-  tuple->column( prefix + "_ISOLATION_Type4" + m_outputSuffix, type );
-  tuple->column( prefix + "_ISOLATION_PE4" + m_outputSuffix, pe );
-  tuple->column( prefix + "_ISOLATION_PX4" + m_outputSuffix, px );
-  tuple->column( prefix + "_ISOLATION_PY4" + m_outputSuffix, py );
-  tuple->column( prefix + "_ISOLATION_PZ4" + m_outputSuffix, pz );
-  tuple->column( prefix + "_ISOLATION_PIDK4" + m_outputSuffix, pidk );
-  tuple->column( prefix + "_ISOLATION_PIDp4" + m_outputSuffix, pidp );
-  tuple->column( prefix + "_ISOLATION_NNk4" + m_outputSuffix, nnk );
-  tuple->column( prefix + "_ISOLATION_NNpi4" + m_outputSuffix, nnpi );
-  tuple->column( prefix + "_ISOLATION_NNp4" + m_outputSuffix, nnp );
-  tuple->column( prefix + "_ISOLATION_IsMuon4" + m_outputSuffix, ismuon );
-  tuple->column( prefix + "_ISOLATION_NNghost4" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_GhostProb4" + m_outputSuffix, gprob );
-  tuple->column( prefix + "_ISOLATION_TRUEID4" + m_outputSuffix, trueID );
+  test &= tuple->column( prefix + "_ISOLATION_CHI24" + m_outputSuffix, mchi24 );
+  test &= tuple->column( prefix + "_ISOLATION_SC4" + m_outputSuffix, _sc4 );
+  test &= tuple->column( prefix + "_ISOLATION_BDT4" + m_outputSuffix, bdt4 );
+  test &= tuple->column( prefix + "_ISOLATION_ANGLE4" + m_outputSuffix, angle4 );
+  test &= tuple->column( prefix + "_ISOLATION_CHARGE4" + m_outputSuffix, charge );
+  test &= tuple->column( prefix + "_ISOLATION_Type4" + m_outputSuffix, type );
+  test &= tuple->column( prefix + "_ISOLATION_PE4" + m_outputSuffix, pe );
+  test &= tuple->column( prefix + "_ISOLATION_PX4" + m_outputSuffix, px );
+  test &= tuple->column( prefix + "_ISOLATION_PY4" + m_outputSuffix, py );
+  test &= tuple->column( prefix + "_ISOLATION_PZ4" + m_outputSuffix, pz );
+  test &= tuple->column( prefix + "_ISOLATION_PIDK4" + m_outputSuffix, pidk );
+  test &= tuple->column( prefix + "_ISOLATION_PIDp4" + m_outputSuffix, pidp );
+  test &= tuple->column( prefix + "_ISOLATION_NNk4" + m_outputSuffix, nnk );
+  test &= tuple->column( prefix + "_ISOLATION_NNpi4" + m_outputSuffix, nnpi );
+  test &= tuple->column( prefix + "_ISOLATION_NNp4" + m_outputSuffix, nnp );
+  test &= tuple->column( prefix + "_ISOLATION_IsMuon4" + m_outputSuffix, ismuon );
+  test &= tuple->column( prefix + "_ISOLATION_NNghost4" + m_outputSuffix, nng );
+  test &= tuple->column( prefix + "_ISOLATION_GhostProb4" + m_outputSuffix, gprob );
+  test &= tuple->column( prefix + "_ISOLATION_TRUEID4" + m_outputSuffix, trueID );
 
   if ( bdt5 > -1 ) {
     pe    = part5->momentum().E();
@@ -580,25 +584,25 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
     trueID = ( mcp ? mcp->particleID().pid() : 0 );
   }
 
-  tuple->column( prefix + "_ISOLATION_CHI25" + m_outputSuffix, mchi25 );
-  tuple->column( prefix + "_ISOLATION_SC5" + m_outputSuffix, _sc5 );
-  tuple->column( prefix + "_ISOLATION_BDT5" + m_outputSuffix, bdt5 );
-  tuple->column( prefix + "_ISOLATION_ANGLE5" + m_outputSuffix, angle5 );
-  tuple->column( prefix + "_ISOLATION_CHARGE5" + m_outputSuffix, charge );
-  tuple->column( prefix + "_ISOLATION_Type5" + m_outputSuffix, type );
-  tuple->column( prefix + "_ISOLATION_PE5" + m_outputSuffix, pe );
-  tuple->column( prefix + "_ISOLATION_PX5" + m_outputSuffix, px );
-  tuple->column( prefix + "_ISOLATION_PY5" + m_outputSuffix, py );
-  tuple->column( prefix + "_ISOLATION_PZ5" + m_outputSuffix, pz );
-  tuple->column( prefix + "_ISOLATION_PIDK5" + m_outputSuffix, pidk );
-  tuple->column( prefix + "_ISOLATION_PIDp5" + m_outputSuffix, pidp );
-  tuple->column( prefix + "_ISOLATION_NNk5" + m_outputSuffix, nnk );
-  tuple->column( prefix + "_ISOLATION_NNpi5" + m_outputSuffix, nnpi );
-  tuple->column( prefix + "_ISOLATION_NNp5" + m_outputSuffix, nnp );
-  tuple->column( prefix + "_ISOLATION_IsMuon5" + m_outputSuffix, ismuon );
-  tuple->column( prefix + "_ISOLATION_NNghost5" + m_outputSuffix, nng );
-  tuple->column( prefix + "_ISOLATION_GhostProb5" + m_outputSuffix, gprob );
-  tuple->column( prefix + "_ISOLATION_TRUEID5" + m_outputSuffix, trueID );
+  test &= tuple->column( prefix + "_ISOLATION_CHI25" + m_outputSuffix, mchi25 );
+  test &= tuple->column( prefix + "_ISOLATION_SC5" + m_outputSuffix, _sc5 );
+  test &= tuple->column( prefix + "_ISOLATION_BDT5" + m_outputSuffix, bdt5 );
+  test &= tuple->column( prefix + "_ISOLATION_ANGLE5" + m_outputSuffix, angle5 );
+  test &= tuple->column( prefix + "_ISOLATION_CHARGE5" + m_outputSuffix, charge );
+  test &= tuple->column( prefix + "_ISOLATION_Type5" + m_outputSuffix, type );
+  test &= tuple->column( prefix + "_ISOLATION_PE5" + m_outputSuffix, pe );
+  test &= tuple->column( prefix + "_ISOLATION_PX5" + m_outputSuffix, px );
+  test &= tuple->column( prefix + "_ISOLATION_PY5" + m_outputSuffix, py );
+  test &= tuple->column( prefix + "_ISOLATION_PZ5" + m_outputSuffix, pz );
+  test &= tuple->column( prefix + "_ISOLATION_PIDK5" + m_outputSuffix, pidk );
+  test &= tuple->column( prefix + "_ISOLATION_PIDp5" + m_outputSuffix, pidp );
+  test &= tuple->column( prefix + "_ISOLATION_NNk5" + m_outputSuffix, nnk );
+  test &= tuple->column( prefix + "_ISOLATION_NNpi5" + m_outputSuffix, nnpi );
+  test &= tuple->column( prefix + "_ISOLATION_NNp5" + m_outputSuffix, nnp );
+  test &= tuple->column( prefix + "_ISOLATION_IsMuon5" + m_outputSuffix, ismuon );
+  test &= tuple->column( prefix + "_ISOLATION_NNghost5" + m_outputSuffix, nng );
+  test &= tuple->column( prefix + "_ISOLATION_GhostProb5" + m_outputSuffix, gprob );
+  test &= tuple->column( prefix + "_ISOLATION_TRUEID5" + m_outputSuffix, trueID );
 
   return StatusCode( test );
 }
