@@ -52,7 +52,7 @@ StatusCode TupleToolSLTools::initialize() {
 
   m_dist = m_dva->distanceCalculator();
   if ( !m_dist ) {
-    Error( "Unable to retrieve the IDistanceCalculator tool" );
+    Error( "Unable to retrieve the IDistanceCalculator tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
@@ -60,7 +60,7 @@ StatusCode TupleToolSLTools::initialize() {
   m_pVertexFit = tool<IVertexFit>( m_typeVertexFit, this );
   // m_pVertexFit  = tool<IVertexFit>("OfflineVertexFitter",this);
   if ( !m_pVertexFit ) {
-    Error( "Unable to retrieve the IVertexFit tool" );
+    Error( "Unable to retrieve the IVertexFit tool" ).ignore();
     return StatusCode::FAILURE;
   }
 
@@ -139,8 +139,8 @@ StatusCode TupleToolSLTools::fill( const Particle* mother, const Particle* P,
   std::vector<double> q2_err = q2_errors( TV3_SV, TV3_PV, TLV_P, TLV_mu,
                                           P->covMatrix(), PV->covMatrix() );
   nu_slns                    = recoNu( TLV_P, Mdirn, m_Bmass );
-  fillVertex( pmu_vert, prefix + "_SV", tuple );
-  fillVertex( PV, prefix + "_PV", tuple );
+  test &= fillVertex( pmu_vert, prefix + "_SV", tuple );
+  test &= fillVertex( PV, prefix + "_PV", tuple );
   double         dist    = 0;
   double         chi2    = 0;
   StatusCode     sc      = m_dist->distance( PV, P->endVertex(), dist, chi2 );
