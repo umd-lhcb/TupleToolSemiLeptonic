@@ -139,11 +139,11 @@ StatusCode TupleToolApplyIsolation::fill( const Particle*    mother,
   LHCb::Particle::ConstVector parts2Vertex;
   LHCb::Particle::ConstVector parts2VertexD;
 
-  double                angle = -1;
-  double                angle2 = -1;
-  double                angle3 = -1;
-  double                angle4 = -1;
-  double                angle5 = -1;
+  double                angle  = -2;
+  double                angle2 = -2;
+  double                angle3 = -2;
+  double                angle4 = -2;
+  double                angle5 = -2;
   double                maxchi2 = -99;
   double                mchi22  = -99;
   double                mchi23  = -99;
