@@ -316,7 +316,7 @@ StatusCode TupleToolApplyIsolationVetoDst::fill( const Particle*    mother,
           float bdtval = m_Reader->EvaluateMVA( "BDT method" );
           for ( int i = 0; i < m_nWrite; i++ ) {
             if ( bdtval > maxbdt[i] ) {
-              for ( int j = m_nWrite; j > i; j-- ) {
+              for ( int j = m_nWrite - 1; j > i; j-- ) {
                 SelParts[j] = SelParts[j - 1];
                 maxbdt[j]   = maxbdt[j - 1];
               }
